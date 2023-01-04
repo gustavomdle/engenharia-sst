@@ -21,7 +21,9 @@ export default class SstNovoProjectWebPart extends BaseClientSideWebPart<ISstNov
     const element: React.ReactElement<ISstNovoProjectProps> = React.createElement(
       SstNovoProject,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 
