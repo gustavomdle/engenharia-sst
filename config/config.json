@@ -1,0 +1,55 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "sst-novo-project-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sstNovoProject/SstNovoProjectWebPart.js",
+          "manifest": "./src/webparts/sstNovoProject/SstNovoProjectWebPart.manifest.json"
+        }
+      ]
+    },
+    "sst-editar-project-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sstEditarProject/SstEditarProjectWebPart.js",
+          "manifest": "./src/webparts/sstEditarProject/SstEditarProjectWebPart.manifest.json"
+        }
+      ]
+    },
+    "sst-detalhes-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sstDetalhes/SstDetalhesWebPart.js",
+          "manifest": "./src/webparts/sstDetalhes/SstDetalhesWebPart.manifest.json"
+        }
+      ]
+    },
+    "sst-listar-projects-todos-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sstListarProjectsTodos/SstListarProjectsTodosWebPart.js",
+          "manifest": "./src/webparts/sstListarProjectsTodos/SstListarProjectsTodosWebPart.manifest.json"
+        }
+      ]
+    },
+    "sst-listar-projects-por-status-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/sstListarProjectsPorStatus/SstListarProjectsPorStatusWebPart.js",
+          "manifest": "./src/webparts/sstListarProjectsPorStatus/SstListarProjectsPorStatusWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "ControlStrings": "node_modules/@pnp/spfx-controls-react/lib/loc/{locale}.js",
+    "SstNovoProjectWebPartStrings": "lib/webparts/sstNovoProject/loc/{locale}.js",
+    "SstEditarProjectWebPartStrings": "lib/webparts/sstEditarProject/loc/{locale}.js",
+    "SstDetalhesWebPartStrings": "lib/webparts/sstDetalhes/loc/{locale}.js",
+    "SstListarProjectsTodosWebPartStrings": "lib/webparts/sstListarProjectsTodos/loc/{locale}.js",
+    "SstListarProjectsPorStatusWebPartStrings": "lib/webparts/sstListarProjectsPorStatus/loc/{locale}.js"
+  }
+}

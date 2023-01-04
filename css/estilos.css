@@ -1,0 +1,138 @@
+#container {
+    width: 920px;
+}
+
+.required {
+    color: rgb(164, 38, 44);
+}
+
+
+.filter-label{
+    display: block !important;
+
+}
+
+.card {
+    margin-bottom: 5px;
+}
+
+.labelTitulo{
+
+    margin-bottom: 0px !important;
+}
+
+.carregando {
+    text-align: center;
+}
+
+.editorRichTex {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.datePicker {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    height: 39px;
+    font-size: 14px;
+}
+
+
+.ms-TextField-fieldGroup {
+    border: 0px;
+}
+
+.header-class {
+    word-wrap: break-word;
+}
+
+#gridTodosItens {
+    word-wrap: break-word;
+    overflow: auto;
+    table-layout: auto !important;
+    width: 927px;
+}
+
+.btnCustom{
+    margin-top: 10px;
+}
+
+.hidden{
+    display: none;
+}
+
+.padding10{
+    padding: 10px;
+}
+
+.alinhamentoMeio{
+    vertical-align:bottom
+}
+
+.labelConjuntosSubconjutos{
+    width: 84px;
+    vertical-align: middle;
+}
+
+.tdLarguraPesquena{
+
+    width: 129px;
+
+}
+
+.tdLarguraGrande{
+
+    width: 636px;
+
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.break-word{
+    word-break: break-word
+}
+
+.cinza{
+    color: darkgray;
+}
+
+/*
+.fieldGroup-234{
+    border: 0px;
+}
+
+.field-147 {
+    color: #495057;
+    font-size: 1rem;
+}
+
+.field-148 {
+    color: #495057;
+    font-size: 1rem;
+}
+
+.icon-156 {
+    padding: 4px 5px 5px;
+}
+
+.my-hovertable > tbody > tr.mytable-hover-row:hover {
+    background-color: rgba(212, 24, 24, 0.822) !important;
+}
+*/
+/*
+#gridTodosItens{
+    word-wrap: break-word;
+}
+*/
