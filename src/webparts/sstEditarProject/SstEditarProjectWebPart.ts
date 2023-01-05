@@ -21,7 +21,9 @@ export default class SstEditarProjectWebPart extends BaseClientSideWebPart<ISstE
     const element: React.ReactElement<ISstEditarProjectProps> = React.createElement(
       SstEditarProject,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 
