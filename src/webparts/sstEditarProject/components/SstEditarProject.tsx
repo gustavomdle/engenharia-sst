@@ -22,6 +22,7 @@ import { RichText } from "@pnp/spfx-controls-react/lib/RichText";
 import { SiteUser } from 'sp-pnp-js/lib/sharepoint/siteusers';
 import BootstrapTable from 'react-bootstrap-table-next';
 import filterFactory, { textFilter } from 'react-bootstrap-table2-filter';
+import InputMask from 'react-input-mask';
 
 require("../../../../node_modules/bootstrap/dist/css/bootstrap.min.css");
 require("../../../../css/estilos.css");
@@ -33,12 +34,16 @@ var _arrOwnerID = [];
 var _arrParticipants = [];
 var _arrParticipantsID = [];
 var _productDescription;
+var _descricaoRelatedIssues;
+var _descricaoComentariosRelatedIssues;
 var _criticalRequirements;
 var _projectID;
 var _arrAprovadorEngenharia = [];
 var _arrCliente = [];
 var _pos = 0;
 var _pos2 = 0;
+var _atribuidoARelatedIssues = [];
+var _descricaoComentariosMilestone;
 
 export interface IReactGetItemsState {
 
@@ -61,37 +66,20 @@ export interface IReactGetItemsState {
   ],
   itemsCategoria: [],
   itemsTipo: [],
+  itemsIssueStatus: [],
+  itemsPriority: [],
+  itemsIssueCategoria: [],
   valorItemsCategoria: "",
   valorItemsTipo: "",
   PeoplePickerDefaultItemsOwner: string[],
   PeoplePickerDefaultItemsParticipants: string[],
   itemsListRelatedMilestones: any[],
   itemsListRelatedIssues: any[],
+  PeoplePickerAtribudioARelatedIssues: string[];
 
 }
 
 
-const tablecolumnsRelatedIssues = [
-  {
-    dataField: "Title",
-    text: "Title",
-    headerStyle: { "backgroundColor": "#bee5eb" },
-    classes: 'headerPreStage',
-    headerClasses: 'text-center',
-  },
-
-]
-
-const tablecolumnsRelatedMilestones = [
-  {
-    dataField: "Title",
-    text: "Title",
-    headerStyle: { "backgroundColor": "#bee5eb" },
-    classes: 'headerPreStage',
-    headerClasses: 'text-center',
-  },
-
-]
 
 
 export default class SstEditarProject extends React.Component<ISstEditarProjectProps, IReactGetItemsState> {
@@ -119,12 +107,16 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       ],
       itemsCategoria: [],
       itemsTipo: [],
+      itemsIssueStatus: [],
+      itemsPriority: [],
+      itemsIssueCategoria: [],
       valorItemsCategoria: "",
       valorItemsTipo: "",
       PeoplePickerDefaultItemsOwner: [],
       PeoplePickerDefaultItemsParticipants: [],
       itemsListRelatedMilestones: [],
       itemsListRelatedIssues: [],
+      PeoplePickerAtribudioARelatedIssues: []
     };
   }
 
@@ -136,6 +128,40 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
     var queryParms = new UrlQueryParameterCollection(window.location.href);
     _projectID = parseInt(queryParms.getValue("ProjectID"));
+
+    document
+      .getElementById("btnAbrirModalCadastrarRelatedIssues")
+      .addEventListener("click", (e: Event) => this.abrirModalCadastrarRelatedIssues());
+
+    document
+      .getElementById("btnAbrirModalCadastrarMilestones")
+      .addEventListener("click", (e: Event) => this.abrirModalCadastrarMilestones());
+
+    document
+      .getElementById("btnCadastrarRelatedIssues")
+      .addEventListener("click", (e: Event) => this.cadastrarProjectIssues());
+
+    document
+      .getElementById("btnCadastrarMilestone")
+      .addEventListener("click", (e: Event) => this.cadastrarMilestone());
+
+    document
+      .getElementById("btnSucessoCadastrarRelatedIssues")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedIssues());
+
+    document
+      .getElementById("btnSucessoExcluirRelatedIssues")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedIssues());
+
+    document
+      .getElementById("btnSucessoExcluirMilestone")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedMilestone());
+
+    document
+      .getElementById("btnSucessoCadastrarMilestone")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedMilestone());
+
+
 
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
@@ -153,7 +179,131 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
   }
 
 
+
+
   public render(): React.ReactElement<ISstEditarProjectProps> {
+
+    const tablecolumnsRelatedIssues = [
+      {
+        dataField: "Title",
+        text: "Título",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "Priority",
+        text: "Prioridade",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "Status",
+        text: "Status",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "",
+        text: "Atribuído a",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var atribuidoA = row.AssignedTo.results[0].Title;
+          console.log("atribuidoA", atribuidoA);
+          return atribuidoA;
+        }
+      },
+      {
+        dataField: "DueDate",
+        text: "Vencimento",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.DueDate);
+          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          return dtdata;
+        }
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "210px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var id = row.ID;
+          var titulo = row.Title;
+
+          return (
+
+            <div>
+              <button onClick={async () => { this.excluirRelatedIssues(id, titulo) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+            </div>
+          )
+
+        }
+      }
+
+    ]
+
+    const tablecolumnsRelatedMilestones = [
+      {
+        dataField: "Title",
+        text: "Project Milestone",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "DueDate",
+        text: "Vencimento",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.DueDate);
+          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          return dtdata;
+        }
+      },
+      {
+        dataField: "Complete",
+        text: "Concluído",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var concluido = row.Complete;
+          var resultado = "Não";
+          if (concluido == true) resultado = "Sim";
+          return resultado;
+        }
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "210px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var id = row.ID;
+          var titulo = row.Title;
+
+          return (
+
+            <div>
+              <button onClick={async () => { this.excluirMilestone(id, titulo) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+            </div>
+          )
+
+        }
+      }
+
+    ]
+
     return (
 
       <><div id="container">
@@ -327,14 +477,13 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
             </div>
           </div>
 
-
           <div className="card">
-            <div className="card-header btn" id="headingInformacoesProduto" data-toggle="collapse" data-target="#collapseInformacoesProduto" aria-expanded="true" aria-controls="collapseInformacoesProduto">
+            <div className="card-header btn" id="headingAnexo" data-toggle="collapse" data-target="#collapseAnexo" aria-expanded="true" aria-controls="collapseAnexo">
               <h5 className="mb-0 text-info">
                 Anexos
               </h5>
             </div>
-            <div id="collapseInformacoesProduto" className="collapse show" aria-labelledby="headingOne">
+            <div id="collapseAnexo" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
 
                 <div className="form-group">
@@ -414,35 +563,33 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           </div>
 
           <div className="card">
-            <div className="card-header btn" id="headingPreStageHardware" data-toggle="collapse" data-target="#collapsePreStageHardware" aria-expanded="true" aria-controls="collapsePreStageHardware">
+            <div className="card-header btn" id="headingRelatedIssues" data-toggle="collapse" data-target="#collapseRelatedIssues" aria-expanded="true" aria-controls="collapseRelatedIssues">
               <h5 className="mb-0 text-info">
                 Related Issues
               </h5>
             </div>
-            <div id="collapsePreStageHardware" className="collapse show" aria-labelledby="headingOne">
+            <div id="collapseRelatedIssues" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
                 <div id='tabelaPreStageSoftware'>
                   <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensRelatedIssues" keyField='id' data={this.state.itemsListRelatedIssues} columns={tablecolumnsRelatedIssues} headerClasses="header-class" />
                 </div>
-                <button id='btnAbrirModalCadastrarPreStage' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>&nbsp;
-                <button id='btnAbrirModalCadastrarPreStageEmLote' className="btn btn-secondary btnCustom btn-sm">Adicionar em lote</button>
+                <button id='btnAbrirModalCadastrarRelatedIssues' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>&nbsp;
               </div>
             </div>
           </div>
 
           <div className="card">
-            <div className="card-header btn" id="headingPreStageHardware" data-toggle="collapse" data-target="#collapsePreStageHardware" aria-expanded="true" aria-controls="collapsePreStageHardware">
+            <div className="card-header btn" id="headingRelatedMilestones" data-toggle="collapse" data-target="#collapseRelatedMilestones" aria-expanded="true" aria-controls="collapseRelatedMilestones">
               <h5 className="mb-0 text-info">
-              Related Milestones
+                Related Milestones
               </h5>
             </div>
-            <div id="collapsePreStageHardware" className="collapse show" aria-labelledby="headingOne">
+            <div id="collapseRelatedMilestones" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
                 <div id='tabelaPreStageSoftware'>
                   <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensPreStageSoftware" keyField='id' data={this.state.itemsListRelatedMilestones} columns={tablecolumnsRelatedMilestones} headerClasses="header-class" />
                 </div>
-                <button id='btnAbrirModalCadastrarPreStage' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>&nbsp;
-                <button id='btnAbrirModalCadastrarPreStageEmLote' className="btn btn-secondary btnCustom btn-sm">Adicionar em lote</button>
+                <button id='btnAbrirModalCadastrarMilestones' className="btn btn-secondary btnCustom btn-sm">Adicionar</button>&nbsp;
               </div>
             </div>
           </div>
@@ -457,6 +604,227 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           <button id="btnConfirmarSalvar" className="btn btn-success">Editar</button>
         </div>
 
+        <div className="modal fade" id="modalCadastrarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Related Issues - Cadastrar</h5>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtTitulo-RelatedIssues">Título</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtTitulo-RelatedIssues" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtModeloCadastrar">Atribuido a</label><span className="required"> *</span><br></br>
+                    <PeoplePicker
+                      context={this.props.context as any}
+                      //titleText="Aprovador Engenharia"
+                      personSelectionLimit={1}
+                      groupName={""} // Leave this blank in case you want to filter from all users
+                      showtooltip={true}
+                      required={true}
+                      disabled={false}
+                      onChange={this._getPeoplePickerAtribuidoARelatedIssues.bind(this)}
+                      showHiddenInUI={false}
+                      principalTypes={[PrincipalType.User]}
+                      resolveDelay={1000}
+                      defaultSelectedUsers={this.state.PeoplePickerAtribudioARelatedIssues}
+                      ensureUser={true} />
+                  </div>
+                </div>
+
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label>Status</label><span className="required"> *</span><br></br>
+                    <select id="ddlStatus-RelatedIssues" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsIssueStatus.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label>Prioridade</label><br></br>
+                    <select id="ddlPrioridade-RelatedIssues" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPriority.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="richTextDescricaoRelatedIssues">Descrição</label><br></br>
+                    <div id='richTextDescricaoRelatedIssues'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeDescricaoRelatedIssues(text)} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label>Categoria</label><br></br>
+                    <select id="ddlCategoria-RelatedIssues" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsIssueCategoria.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtData-DataVencimento-RelatedIssues">Vencimento</label><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtData-DataVencimento-RelatedIssues" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="richTextComentariosRelatedIssues">Comentários</label><br></br>
+                    <div id='richTextComentariosRelatedIssues'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeComentariosRelatedIssues(text)} />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnCadastrarRelatedIssues" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalCadastrarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Related Milestones - Cadastrar</h5>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtProjectMilestone">Project Milestone</label><span className="required"> *</span><br></br>
+                    <InputMask mask="(99999) aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" className="form-control" maskChar="" id="txtProjectMilestone" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label>Concluído</label><br></br>
+                    <select id="ddlConcluido-Milestone" className="form-control" >
+                      <option value="0" selected>Não</option>
+                      <option value="1" >Sim</option>
+                    </select>
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtData-DataVencimento-RelatedIssues">Vencimento</label><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtData-DataVencimento-Milestone" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="richTextComentariosRelatedIssues">Comentários</label><br></br>
+                    <div id='richTextComentariosRelatedIssues'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeComentariosMilestone(text)} />
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnCadastrarMilestone" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoCadastrarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Issue criado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarRelatedIssues" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoCadastrarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Milestone criado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoCadastrarMilestone" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoExcluirRelatedIssue" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Issue excluido com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirRelatedIssues" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="modal fade" id="modalSucessoExcluirMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Milestone excluido com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoExcluirMilestone" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
 
 
@@ -517,6 +885,104 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         console.log(jqXHR.responseText);
       }
     });
+
+
+    var reactIssueStatus = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('Project Issues')/fields?$filter=EntityPropertyName eq 'Status'`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactIssueStatus.setState({
+          itemsIssueStatus: resultData.d.results[0].Choices.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactPriority = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('Project Issues')/fields?$filter=EntityPropertyName eq 'Priority'`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactPriority.setState({
+          itemsPriority: resultData.d.results[0].Choices.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    var reactIssueCategoria = this;
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('Project Issues')/fields?$filter=EntityPropertyName eq 'Category'`,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+        reactIssueCategoria.setState({
+          itemsIssueCategoria: resultData.d.results[0].Choices.results
+        });
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactHandlerRelatedIssues = this;
+
+    jQuery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/Title,DueDate&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactHandlerRelatedIssues.setState({
+            itemsListRelatedIssues: resultData.d.results
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactHandlerRelatedMilestones = this;
+
+    jQuery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project/ID eq ` + _projectID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactHandlerRelatedMilestones.setState({
+            itemsListRelatedMilestones: resultData.d.results
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
 
 
 
@@ -698,8 +1164,6 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   }
 
-
-
   async excluirAnexoItem(ServerRelativeUr, name, elemento, elemento2) {
 
     if (confirm("Deseja realmente excluir o arquivo " + name + "?") == true) {
@@ -721,7 +1185,6 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     }
   }
 
-
   async excluirAnexo(ServerRelativeUr, name, elemento, elemento2) {
 
 
@@ -741,6 +1204,316 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     }
 
   }
+
+  protected abrirModalCadastrarRelatedIssues() {
+
+    console.log("PeoplePickerAtribudioARelatedIssues", this.state.PeoplePickerAtribudioARelatedIssues);
+
+    jQuery("#txtTitulo-RelatedIssues").val("");
+    jQuery("#ddlStatus-RelatedIssues").val("0");
+    jQuery("#ddlPrioridade-RelatedIssues").val("0");
+    jQuery('#richTextDescricaoRelatedIssues').find('.ql-editor').html("<p><br></p>");
+    jQuery("#ddlCategoria-RelatedIssues").val("0");
+    jQuery("#dtData-DataVencimento-RelatedIssues").val("");
+    jQuery('#richTextComentariosRelatedIssues').find('.ql-editor').html("<p><br></p>");
+
+
+    jQuery("#modalCadastrarRelatedIssues").modal({ backdrop: 'static', keyboard: false });
+
+
+
+  }
+
+  protected abrirModalCadastrarMilestones() {
+
+
+    jQuery("#modalCadastrarMilestone").modal({ backdrop: 'static', keyboard: false });
+
+
+
+  }
+
+
+  protected async cadastrarProjectIssues() {
+
+    jQuery("#btnCadastrarRelatedIssues").prop("disabled", true);
+
+
+
+    var titulo = jQuery("#txtTitulo-RelatedIssues").val();
+    var status = jQuery("#ddlStatus-RelatedIssues option:selected").val();
+    var prioridade = jQuery("#ddlPrioridade-RelatedIssues option:selected").val();
+    var descricao = _descricaoRelatedIssues;
+    var categoria = jQuery("#ddlCategoria-RelatedIssues option:selected").val();
+    var comentario = _descricaoComentariosRelatedIssues;
+
+    var data = "" + $("#dtData-DataVencimento-RelatedIssues").val() + "";
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    var arrAtribuidoARelatedIssues = [];
+    for (let i = 0; i < _atribuidoARelatedIssues.length; i++) {
+      arrAtribuidoARelatedIssues.push(_atribuidoARelatedIssues[i]["id"]);
+    }
+
+    //validacao
+    if (titulo == "") {
+      alert("Forneça o Título!");
+      jQuery("#btnCadastrarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (_atribuidoARelatedIssues.length == 0) {
+      alert("Forneça pra quem será atribuído!");
+      jQuery("#btnCadastrarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (status == "0") {
+      alert("Forneça o Status!");
+      jQuery("#btnCadastrarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (titulo == "") {
+      alert("Forneça o Título!");
+      jQuery("#btnCadastrarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      data = null;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    //cadastrar
+
+    await _web.lists
+      .getByTitle("Project Issues")
+      .items.add({
+        ProjectId: _projectID,
+        Title: titulo,
+        Status: status,
+        Priority: prioridade,
+        Comment: descricao,
+        Category: categoria,
+        DueDate: formData,
+        V3Comments: comentario,
+        AssignedToId: { 'results': arrAtribuidoARelatedIssues },
+      })
+      .then(response => {
+
+        jQuery("#btnCadastrarRelatedIssues").prop("disabled", false);
+        jQuery("#modalCadastrarRelatedIssues").modal('hide');
+        jQuery("#modalSucessoCadastrarRelatedIssues").modal({ backdrop: 'static', keyboard: false });
+
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
+  protected async cadastrarMilestone() {
+
+    jQuery("#btnCadastrarMilestone").prop("disabled", true);
+
+    var projectMilestone = jQuery("#txtProjectMilestone").val();
+    var concluido = jQuery("#ddlConcluido-Milestone option:selected").val();
+    var complete = false;
+
+    if (concluido == "1") complete = true;
+
+
+    var data = "" + $("#dtData-DataVencimento-Milestone").val() + "";
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    var comentario = _descricaoComentariosMilestone;
+
+    //validacao
+    if (projectMilestone == "") {
+      alert("Forneça o nome!");
+      jQuery("#btnCadastrarMilestone").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      data = null;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    //cadastrar
+
+    await _web.lists
+      .getByTitle("Project Milestones")
+      .items.add({
+        ProjectId: _projectID,
+        Title: projectMilestone,
+        Complete: complete,
+        DueDate: formData,
+        ProjComments: comentario
+
+      })
+      .then(response => {
+
+        jQuery("#btnCadastrarMilestone").prop("disabled", false);
+        jQuery("#modalCadastrarMilestone").modal('hide');
+        jQuery("#modalSucessoCadastrarMilestone").modal({ backdrop: 'static', keyboard: false });
+
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
+
+
+  protected fecharSucessoRelatedIssues() {
+
+    var reactHandlerRelatedIssues = this;
+
+    jQuery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/Title,DueDate&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactHandlerRelatedIssues.setState({
+            itemsListRelatedIssues: resultData.d.results
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    $("#modalSucessoCadastrarRelatedIssues").modal('hide');
+    $("#modalSucessoExcluirRelatedIssue").modal('hide');
+
+
+  }
+
+
+
+  protected fecharSucessoRelatedMilestone() {
+
+    var reactHandlerRelatedMilestones = this;
+
+    jQuery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project/ID eq ` + _projectID,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactHandlerRelatedMilestones.setState({
+            itemsListRelatedMilestones: resultData.d.results
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+    $("#modalSucessoCadastrarMilestone").modal('hide');
+    $("#modalSucessoExcluirMilestone").modal('hide');
+
+  }
+
+
+  protected async excluirRelatedIssues(id, titulo) {
+
+    if (confirm("Deseja realmente excluir o Related Issue: " + titulo + "?") == true) {
+
+      const list = _web.lists.getByTitle("Project Issues");
+      await list.items.getById(id).recycle()
+        .then(async response => {
+
+          console.log("excluido");
+          jQuery("#modalSucessoExcluirRelatedIssue").modal({ backdrop: 'static', keyboard: false });
+
+
+        })
+        .catch((error: any) => {
+          console.log(error);
+
+        })
+
+
+    } else {
+
+      return false.valueOf;
+    }
+
+  }
+
+  protected async excluirMilestone(id, titulo) {
+
+    if (confirm("Deseja realmente excluir o Related Milestone: " + titulo + "?") == true) {
+
+      const list = _web.lists.getByTitle("Project Milestones");
+      await list.items.getById(id).recycle()
+        .then(async response => {
+
+          console.log("excluido");
+          jQuery("#modalSucessoExcluirMilestone").modal({ backdrop: 'static', keyboard: false });
+
+
+        })
+        .catch((error: any) => {
+          console.log(error);
+
+        })
+
+
+    } else {
+
+      return false.valueOf;
+    }
+
+  }
+
+
+
+
 
   private getDefaultUsers() {
 
@@ -765,6 +1538,11 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     console.log('Items:', items);
   }
 
+  private _getPeoplePickerAtribuidoARelatedIssues(items: any[]) {
+    _atribuidoARelatedIssues = items;
+    console.log('Items:', items);
+  }
+
   private _getPeoplePickerParticipants(items: any[]) {
     _arrParticipants = items;
     console.log('Items:', items);
@@ -772,6 +1550,21 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   private onTextChangeProductDescription = (newText: string) => {
     _productDescription = newText;
+    return newText;
+  }
+
+  private onTextChangeDescricaoRelatedIssues = (newText: string) => {
+    _descricaoRelatedIssues = newText;
+    return newText;
+  }
+
+  private onTextChangeComentariosRelatedIssues = (newText: string) => {
+    _descricaoComentariosRelatedIssues = newText;
+    return newText;
+  }
+
+  private onTextChangeComentariosMilestone = (newText: string) => {
+    _descricaoComentariosMilestone = newText;
     return newText;
   }
 
