@@ -44,6 +44,14 @@ var _pos = 0;
 var _pos2 = 0;
 var _atribuidoARelatedIssues = [];
 var _descricaoComentariosMilestone;
+var _idRelatedIssues;
+var _arrValAtribuidAID = [];
+var _atribuidoARelatedIssuesTeveAlteracao = false;
+var _ownerTevelateracao = false;
+var _participantsTevelateracao = false;
+var _idRelatedMilestones;
+var _size: number = 0;
+var _pastaCriada = "";
 
 export interface IReactGetItemsState {
 
@@ -76,6 +84,10 @@ export interface IReactGetItemsState {
   itemsListRelatedMilestones: any[],
   itemsListRelatedIssues: any[],
   PeoplePickerAtribudioARelatedIssues: string[];
+  PeoplePickerAtribudioARelatedIssuesEditar: string[];
+  valorItemsDataVencimentoRelatedIssues: any,
+  valorItemsDataVencimentoRelatedMilestones: any,
+  valorProjectMilestoneRelatedMilestones: any,
 
 }
 
@@ -116,7 +128,11 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       PeoplePickerDefaultItemsParticipants: [],
       itemsListRelatedMilestones: [],
       itemsListRelatedIssues: [],
-      PeoplePickerAtribudioARelatedIssues: []
+      PeoplePickerAtribudioARelatedIssues: [],
+      PeoplePickerAtribudioARelatedIssuesEditar: [],
+      valorItemsDataVencimentoRelatedIssues: "",
+      valorItemsDataVencimentoRelatedMilestones: "",
+      valorProjectMilestoneRelatedMilestones: "",
     };
   }
 
@@ -142,11 +158,23 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       .addEventListener("click", (e: Event) => this.cadastrarProjectIssues());
 
     document
+      .getElementById("btnEditarRelatedIssues")
+      .addEventListener("click", (e: Event) => this.editarProjectIssues());
+
+    document
       .getElementById("btnCadastrarMilestone")
       .addEventListener("click", (e: Event) => this.cadastrarMilestone());
 
     document
+      .getElementById("btnEditarMilestone")
+      .addEventListener("click", (e: Event) => this.editarMilestone());
+
+    document
       .getElementById("btnSucessoCadastrarRelatedIssues")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedIssues());
+
+    document
+      .getElementById("btnSucessoEditarRelatedIssues")
       .addEventListener("click", (e: Event) => this.fecharSucessoRelatedIssues());
 
     document
@@ -161,7 +189,21 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       .getElementById("btnSucessoCadastrarMilestone")
       .addEventListener("click", (e: Event) => this.fecharSucessoRelatedMilestone());
 
+    document
+      .getElementById("btnSucessoEditarMilestone")
+      .addEventListener("click", (e: Event) => this.fecharSucessoRelatedMilestone());
 
+    document
+      .getElementById("btnConfirmarSalvar")
+      .addEventListener("click", (e: Event) => this.validar("Salvar"));
+
+    document
+      .getElementById("btnSalvar")
+      .addEventListener("click", (e: Event) => this.editar("Salvar"));
+
+    document
+      .getElementById("btnSucessoSalvar")
+      .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
 
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
@@ -206,6 +248,13 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         headerClasses: 'text-center',
       },
       {
+        dataField: "Category",
+        text: "Categoria",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
         dataField: "",
         text: "Atribuído a",
         headerStyle: { "backgroundColor": "#bee5eb" },
@@ -230,18 +279,109 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         }
       },
       {
-        dataField: "",
-        text: "",
-        headerStyle: { "backgroundColor": "#bee5eb", "width": "210px" },
+        dataField: "Comment",
+        text: "Descrição",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
+
+          return <div dangerouslySetInnerHTML={{ __html: `${row.Comment}` }} />;
+
+        }
+      },
+      {
+        dataField: "V3Comments",
+        text: "Comentários",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          return <div dangerouslySetInnerHTML={{ __html: `${row.V3Comments}` }} />;
+
+        }
+      },
+      {
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "130px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          console.log("row related issues", row);
           var id = row.ID;
           var titulo = row.Title;
+          var status = row.Status;
+          var arrAtribuidA = row.AssignedTo;
+          var prioridade = row.Priority;
+          var descricao = row.Comment;
+          var categoria = row.Category;
+          var arrValAtribuidA = [];
+          var arrValAtribuidAID = [];
+          var comentarios = row.V3Comments;
+
+          var data = new Date(row.DueDate);
+          var formdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+
+          var txtDescricao = "";
+
+          if (descricao != null) {
+
+            txtDescricao = descricao.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
+            // console.log("txtParametros", txtDescricao);
+
+            if (txtDescricao.includes("<font")) {
+
+              txtDescricao = txtDescricao.replace("font", "span");
+              txtDescricao = txtDescricao.replace("font", "span");
+
+            }
+
+            if (txtDescricao.includes("color")) {
+
+              txtDescricao = txtDescricao.replace('color="', 'style="color:');
+
+            }
+
+            txtDescricao = txtDescricao.trim();
+
+            console.log("txtDescricao", txtDescricao);
+
+          }
+
+          var txtComentarios = "";
+
+          if (comentarios != null) {
+
+            txtComentarios = comentarios.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
+
+            if (txtComentarios.includes("<font")) {
+
+              txtComentarios = txtComentarios.replace("font", "span");
+              txtComentarios = txtComentarios.replace("font", "span");
+
+            }
+
+            if (txtComentarios.includes("color")) {
+
+              txtComentarios = txtComentarios.replace('color="', 'style="color:');
+
+            }
+
+            txtComentarios = txtComentarios.trim();
+
+            console.log("txtComentarios", txtComentarios);
+
+          }
+
+          console.log("formdata", formdata);
 
           return (
 
             <div>
               <button onClick={async () => { this.excluirRelatedIssues(id, titulo) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+              <button onClick={() => { this.abrirModalEditarRelatedIssues(id, titulo, arrAtribuidA, status, prioridade, txtDescricao, categoria, formdata, txtComentarios) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Editar</button>
             </div>
           )
 
@@ -284,18 +424,69 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         }
       },
       {
+        dataField: "ProjComments",
+        text: "Comentários",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          return <div dangerouslySetInnerHTML={{ __html: `${row.ProjComments}` }} />;
+
+        }
+      },
+      {
         dataField: "",
         text: "",
-        headerStyle: { "backgroundColor": "#bee5eb", "width": "210px" },
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "130px" },
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
           var id = row.ID;
           var titulo = row.Title;
+          var concluido = row.Complete;
+          var vlrConcluido = "0";
+          var comentarios = row.ProjComments;
+
+          _descricaoComentariosMilestone = comentarios;
+
+          console.log("concluido", concluido);
+          if (concluido == true) vlrConcluido = "1";
+
+          var data = new Date(row.DueDate);
+          var formdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+
+          console.log("formdata", formdata);
+
+          var txtComentarios = "";
+
+          if (comentarios != null) {
+
+            txtComentarios = comentarios.replace(/<[\/]{0,1}(div)[^><]*>/g, "");
+
+            if (txtComentarios.includes("<font")) {
+
+              txtComentarios = txtComentarios.replace("font", "span");
+              txtComentarios = txtComentarios.replace("font", "span");
+
+            }
+
+            if (txtComentarios.includes("color")) {
+
+              txtComentarios = txtComentarios.replace('color="', 'style="color:');
+
+            }
+
+            txtComentarios = txtComentarios.trim();
+
+            console.log("txtComentarios", txtComentarios);
+
+          }
 
           return (
 
             <div>
               <button onClick={async () => { this.excluirMilestone(id, titulo) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Excluir</button>&nbsp;
+              <button onClick={() => { this.abrirModalEditarRelatedMilestones(id, titulo, vlrConcluido, formdata, txtComentarios) }} className="btn btn-info btnCustom btn-sm btnEdicaoListas">Editar</button>
             </div>
           )
 
@@ -601,7 +792,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       </div>
 
         <br></br><div className="text-right">
-          <button id="btnConfirmarSalvar" className="btn btn-success">Editar</button>
+          <button id="btnConfirmarSalvar" className="btn btn-success">Salvar</button>
         </div>
 
         <div className="modal fade" id="modalCadastrarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -634,7 +825,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
                       showHiddenInUI={false}
                       principalTypes={[PrincipalType.User]}
                       resolveDelay={1000}
-                      defaultSelectedUsers={this.state.PeoplePickerAtribudioARelatedIssues}
+                      // defaultSelectedUsers={this.state.PeoplePickerAtribudioARelatedIssues}
                       ensureUser={true} />
                   </div>
                 </div>
@@ -712,6 +903,114 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           </div>
         </div>
 
+        <div className="modal fade" id="modalEditarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Related Issues - Editar</h5>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtTitulo-RelatedIssues-Editar">Título</label><span className="required"> *</span><br></br>
+                    <input type="text" className="form-control" id="txtTitulo-RelatedIssues-Editar" />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtModeloCadastrar">Atribuido a</label><span className="required"> *</span><br></br>
+                    <PeoplePicker
+                      context={this.props.context as any}
+                      //titleText="Aprovador Engenharia"
+                      personSelectionLimit={1}
+                      groupName={""} // Leave this blank in case you want to filter from all users
+                      showtooltip={true}
+                      required={true}
+                      disabled={false}
+                      onChange={this._getPeoplePickerAtribuidoARelatedIssues.bind(this)}
+                      showHiddenInUI={false}
+                      principalTypes={[PrincipalType.User]}
+                      resolveDelay={1000}
+                      defaultSelectedUsers={this.state.PeoplePickerAtribudioARelatedIssuesEditar}
+                      ensureUser={true} />
+                  </div>
+                </div>
+
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label>Status</label><span className="required"> *</span><br></br>
+                    <select id="ddlStatus-RelatedIssues-Editar" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsIssueStatus.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md">
+                    <label>Prioridade</label><br></br>
+                    <select id="ddlPrioridade-RelatedIssues-Editar" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsPriority.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="richTextDescricaoRelatedIssues">Descrição</label><br></br>
+                    <div id='richTextDescricaoRelatedIssues-Editar'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeDescricaoRelatedIssues(text)} />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label>Categoria</label><br></br>
+                    <select id="ddlCategoria-RelatedIssues-Editar" className="form-control" >
+                      <option value="0" selected>Selecione...</option>
+                      {this.state.itemsIssueCategoria.map(function (item, key) {
+                        return (
+                          <option value={item}>{item}</option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtData-DataVencimento-RelatedIssues-Editar">Vencimento</label><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" value={this.state.valorItemsDataVencimentoRelatedIssues} maskChar="_" id="dtData-DataVencimento-RelatedIssues-Editar" onChange={(e) => this.onTextChangeDataVencimentoRelatedIssues(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label>Comentários</label><br></br>
+                    <div id='richTextComentariosRelatedIssues-Editar'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeComentariosRelatedIssues(text)} />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarRelatedIssues" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="modal fade" id="modalCadastrarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -736,7 +1035,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
                     </select>
                   </div>
                   <div className="form-group col-md-3">
-                    <label htmlFor="dtData-DataVencimento-RelatedIssues">Vencimento</label><br></br>
+                    <label htmlFor="dtData-DataVencimento-Milestone">Vencimento</label><br></br>
                     <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtData-DataVencimento-Milestone" />
                   </div>
                 </div>
@@ -761,6 +1060,55 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           </div>
         </div>
 
+        <div className="modal fade" id="modalEditarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Related Milestones - Editar</h5>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="txtProjectMilestone-Editar">Project Milestone</label><span className="required"> *</span><br></br>
+                    <InputMask mask="(99999) aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" className="form-control" maskChar="" id="txtProjectMilestone-Editar" value={this.state.valorProjectMilestoneRelatedMilestones} onChange={(e) => this.onTextChangeProjectMilestoneRelatedMilestones(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md-9">
+                    <label>Concluído</label><br></br>
+                    <select id="ddlConcluido-Milestone-Editar" className="form-control" >
+                      <option value="0" selected>Não</option>
+                      <option value="1" >Sim</option>
+                    </select>
+                  </div>
+                  <div className="form-group col-md-3">
+                    <label htmlFor="dtData-DataVencimento-RelatedMilestone-Editar">Vencimento</label><br></br>
+                    <InputMask mask="99/99/9999" className="form-control" maskChar="_" id="dtData-DataVencimento-Milestone-Editar" value={this.state.valorItemsDataVencimentoRelatedMilestones} onChange={(e) => this.onTextChangeDataVencimentoRelatedMilestones(e.target.value)} />
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md">
+                    <label htmlFor="richTextComentariosRelatedMilestoneEditar">Comentários</label><br></br>
+                    <div id='richTextComentariosMilestone-Editar'>
+                      <RichText className="editorRichTex" value=""
+                        onChange={(text) => this.onTextChangeComentariosMilestone(text)} />
+                    </div>
+                  </div>
+                </div>
+
+
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnEditarMilestone" className="btn btn-success">Salvar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="modal fade" id="modalSucessoCadastrarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -777,6 +1125,22 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           </div>
         </div>
 
+        <div className="modal fade" id="modalSucessoEditarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Issue alterado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarRelatedIssues" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="modal fade" id="modalSucessoCadastrarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -788,6 +1152,22 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucessoCadastrarMilestone" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoEditarMilestone" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Related Milestone alterado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoEditarMilestone" className="btn btn-primary">OK</button>
               </div>
             </div>
           </div>
@@ -821,6 +1201,49 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucessoExcluirMilestone" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalConfirmarSalvar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Confirmação</h5>
+              </div>
+              <div className="modal-body">
+                Deseja realmente salvar a Solicitação?
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnSalvar" type="button" className="btn btn-primary">Sim</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoSalvar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Solicitação alterada com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoSalvar" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalCarregando" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div>
+            <div className="modal-dialog" role="document">
+              <div className="modal-content">
+                <div id='conteudoLoading' className='carregando'></div>
               </div>
             </div>
           </div>
@@ -940,7 +1363,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     var reactHandlerRelatedIssues = this;
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/Title,DueDate&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/ID,AssignedTo/Title,DueDate,Comment,Category,V3Comments&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -987,7 +1410,6 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
 
   }
-
 
   protected getProject() {
 
@@ -1233,12 +1655,9 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   }
 
-
   protected async cadastrarProjectIssues() {
 
     jQuery("#btnCadastrarRelatedIssues").prop("disabled", true);
-
-
 
     var titulo = jQuery("#txtTitulo-RelatedIssues").val();
     var status = jQuery("#ddlStatus-RelatedIssues option:selected").val();
@@ -1327,6 +1746,175 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   }
 
+  protected async abrirModalEditarRelatedIssues(id, titulo, arrAtribuidA, status, prioridade, descricao, categoria, vencimento, txtComentarios) {
+
+    jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+    // 
+    //console.log("arrValAtribuidAID x", arrValAtribuidAID);
+
+    // _arrValAtribuidAID = arrValAtribuidAID;
+    // _arrValAtribuidAID = arrValAtribuidAID;
+
+    _idRelatedIssues = id;
+
+    var arrValAtribuidA = [];
+    var arrValAtribuidAID = [];
+
+    _arrValAtribuidAID = [];
+
+    console.log("arrAtribuidA A", arrAtribuidA);
+
+    if (arrAtribuidA.hasOwnProperty('results')) {
+      for (var x = 0; x < arrAtribuidA.results.length; x++) {
+        arrValAtribuidA.push(arrAtribuidA.results[x].Title);
+        arrValAtribuidAID.push(arrAtribuidA.results[x].ID);
+      }
+    }
+
+    console.log("arrValAtribuidA A", arrValAtribuidA);
+    console.log("arrValAtribuidAID A", arrValAtribuidAID);
+
+    _arrValAtribuidAID = arrValAtribuidAID;
+
+    jQuery('#txtTitulo-RelatedIssues-Editar').val(titulo);
+    jQuery(`#ddlStatus-RelatedIssues-Editar option[value="${status}"]`).prop('selected', true);
+    jQuery(`#ddlPrioridade-RelatedIssues-Editar option[value="${prioridade}"]`).prop('selected', true);
+    jQuery('#richTextDescricaoRelatedIssues-Editar').find('.ql-editor').html(`${descricao}`);
+    jQuery(`#ddlCategoria-RelatedIssues-Editar option[value="${categoria}"]`).prop('selected', true);
+    jQuery('#richTextComentariosRelatedIssues-Editar').find('.ql-editor').html(`${txtComentarios}`);
+
+    var reactRelatedIssues = this;
+    reactRelatedIssues.setState({
+      valorItemsDataVencimentoRelatedIssues: vencimento
+    });
+
+    // console.log("atribuidA", atribuidA);
+
+    setTimeout(() => {
+
+      this.setState({
+        PeoplePickerAtribudioARelatedIssuesEditar: arrValAtribuidA,
+      });
+
+    }, 0);
+
+    jQuery("#modalEditarRelatedIssues").modal({ backdrop: 'static', keyboard: false });
+
+  }
+
+  protected async editarProjectIssues() {
+
+    jQuery("#btnEditarRelatedIssues").prop("disabled", true);
+
+    var titulo = jQuery("#txtTitulo-RelatedIssues-Editar").val();
+    var status = jQuery("#ddlStatus-RelatedIssues-Editar option:selected").val();
+    var prioridade = jQuery("#ddlPrioridade-RelatedIssues-Editar option:selected").val();
+    var descricao = _descricaoRelatedIssues;
+    var categoria = jQuery("#ddlCategoria-RelatedIssues-Editar option:selected").val();
+    var comentario = _descricaoComentariosRelatedIssues;
+
+    var data = "" + $("#dtData-DataVencimento-RelatedIssues-Editar").val() + "";
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    var arrAtribuidoARelatedIssues = [];
+
+    console.log("_atribuidoARelatedIssuesTeveAlteracao", _atribuidoARelatedIssuesTeveAlteracao);
+    console.log("_arrValAtribuidAID", _arrValAtribuidAID);
+
+    if (_atribuidoARelatedIssuesTeveAlteracao) {
+
+      for (let i = 0; i < _atribuidoARelatedIssues.length; i++) {
+        if (_atribuidoARelatedIssues[i]["id"] != null)
+          arrAtribuidoARelatedIssues.push(_atribuidoARelatedIssues[i]["id"]);
+      }
+
+    } else {
+
+      arrAtribuidoARelatedIssues = _arrValAtribuidAID;
+
+    }
+
+    console.log("arrAtribuidoARelatedIssues", arrAtribuidoARelatedIssues);
+
+
+    //validacao
+    if (titulo == "") {
+      alert("Forneça o Título!");
+      jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (_atribuidoARelatedIssuesTeveAlteracao) {
+
+      if (_atribuidoARelatedIssues.length == 0) {
+        alert("Forneça pra quem será atribuído!");
+        jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+        return false;
+      }
+
+    }
+
+    if (status == "0") {
+      alert("Forneça o Status!");
+      jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (titulo == "") {
+      alert("Forneça o Título!");
+      jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      data = null;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    //cadastrar
+
+    await _web.lists
+      .getByTitle("Project Issues")
+      .items.getById(_idRelatedIssues).update({
+        ProjectId: _projectID,
+        Title: titulo,
+        Status: status,
+        Priority: prioridade,
+        Comment: descricao,
+        Category: categoria,
+        DueDate: formData,
+        V3Comments: comentario,
+        AssignedToId: { 'results': arrAtribuidoARelatedIssues },
+      })
+      .then(response => {
+
+        console.log("editou!!!");
+
+        jQuery("#btnEditarRelatedIssues").prop("disabled", false);
+        jQuery("#modalEditarRelatedIssues").modal('hide');
+        jQuery("#modalSucessoEditarRelatedIssues").modal({ backdrop: 'static', keyboard: false });
+
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
+
   protected async cadastrarMilestone() {
 
     jQuery("#btnCadastrarMilestone").prop("disabled", true);
@@ -1394,14 +1982,78 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   }
 
+  protected async editarMilestone() {
 
+    jQuery("#btnEditarMilestone").prop("disabled", true);
+
+    var projectMilestone = jQuery("#txtProjectMilestone-Editar").val();
+    var concluido = jQuery("#ddlConcluido-Milestone-Editar option:selected").val();
+    var complete = false;
+
+    if (concluido == "1") complete = true;
+
+    var data = "" + $("#dtData-DataVencimento-Milestone-Editar").val() + "";
+    var dataDia = data.substring(0, 2);
+    var dataMes = data.substring(3, 5);
+    var dataAno = data.substring(6, 10);
+    var formData = dataAno + "-" + dataMes + "-" + dataDia;
+
+    var comentario = _descricaoComentariosMilestone;
+
+    //validacao
+    if (projectMilestone == "") {
+      alert("Forneça o nome!");
+      jQuery("#btnEditarMilestone").prop("disabled", false);
+      return false;
+    }
+
+    if (data == "") {
+      data = null;
+    } else {
+      var reg = /(0[1-9]|[12][0-9]|3[01])[- /.](0[1-9]|1[012])[- /.](19|20)\d\d/;
+      if (data.match(reg)) {
+      }
+      else {
+        alert("Forneça uma data válida!");
+        jQuery("#btnCadastrarPontoCorte").prop("disabled", false);
+        return false;
+      }
+    }
+
+    //cadastrar
+
+    await _web.lists
+      .getByTitle("Project Milestones")
+      .items.getById(_idRelatedMilestones).update({
+        ProjectId: _projectID,
+        Title: projectMilestone,
+        Complete: complete,
+        DueDate: formData,
+        ProjComments: comentario
+
+      })
+      .then(response => {
+
+        jQuery("#btnEditarMilestone").prop("disabled", false);
+        jQuery("#modalEditarMilestone").modal('hide');
+        jQuery("#modalSucessoEditarMilestone").modal({ backdrop: 'static', keyboard: false });
+
+
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+
+
+  }
 
   protected fecharSucessoRelatedIssues() {
 
     var reactHandlerRelatedIssues = this;
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/Title,DueDate&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/ID,AssignedTo/Title,DueDate,Comment,Category,V3Comments&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1409,7 +2061,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         console.log("resultData", resultData);
 
         if (resultData.d.results.length > 0) {
-          jQuery("#tabelaPreStageSoftware").show();
+          //jQuery("#tabelaPreStageSoftware").show();
           reactHandlerRelatedIssues.setState({
             itemsListRelatedIssues: resultData.d.results
           });
@@ -1423,11 +2075,10 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
     $("#modalSucessoCadastrarRelatedIssues").modal('hide');
     $("#modalSucessoExcluirRelatedIssue").modal('hide');
+    $("#modalSucessoEditarRelatedIssues").modal('hide');
 
 
   }
-
-
 
   protected fecharSucessoRelatedMilestone() {
 
@@ -1455,9 +2106,9 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
     $("#modalSucessoCadastrarMilestone").modal('hide');
     $("#modalSucessoExcluirMilestone").modal('hide');
+    $("#modalSucessoEditarMilestone").modal('hide');
 
   }
-
 
   protected async excluirRelatedIssues(id, titulo) {
 
@@ -1482,6 +2133,28 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
       return false.valueOf;
     }
+
+  }
+
+  protected async abrirModalEditarRelatedMilestones(id, titulo, concluido, vencimento, txtComentarios) {
+
+    console.log("titulo", titulo);
+
+    _idRelatedMilestones = id;
+
+    //jQuery('#txtProjectMilestone-Editar').val(titulo);
+    jQuery(`#ddlConcluido-Milestone-Editar option[value="${concluido}"]`).prop('selected', true);
+
+    var reactRelatedIssues = this;
+    reactRelatedIssues.setState({
+      valorItemsDataVencimentoRelatedMilestones: vencimento,
+      valorProjectMilestoneRelatedMilestones: titulo
+    });
+
+    jQuery('#richTextComentariosMilestone-Editar').find('.ql-editor').html(`${txtComentarios}`);
+
+
+    jQuery("#modalEditarMilestone").modal({ backdrop: 'static', keyboard: false });
 
   }
 
@@ -1511,8 +2184,286 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
   }
 
+  protected validar(opcao) {
+
+    var name = jQuery("#txtName").val();
+    var category = jQuery("#ddlCategory option:selected").val();
+    var type = jQuery("#ddlType option:selected").val();
+    var ompDocuments = jQuery("#txtOMPDocuments").val();
+
+    var arrClient = Array.prototype.slice.call(document.querySelectorAll('#ddlCliente2 option'), 0).map(function (v, i, a) {
+      return v.value;
+    });
+
+    if (name == "") {
+      alert("Forneça o nome da Solicitação!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (category == "0") {
+      alert("Escolha uma categoria!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (type == "0") {
+      alert("Escolha um tipo!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (_arrOwner.length == 0) {
+      alert("Forneça o Owner!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (_arrParticipants.length == 0) {
+      alert("Forneça os participantes!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (arrClient.length == 0) {
+      alert("Escolha pelo meno um cliente!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    if (ompDocuments == "") {
+      alert("Forneça a OMP!");
+      document.getElementById('ProjectInformation').scrollIntoView();
+      return false;
+    }
+
+    var files = (document.querySelector("#input") as HTMLInputElement).files;
+
+    if (files.length > 0) {
+
+      console.log("files.length", files.length);
+
+      for (var i = 0; i <= files.length - 1; i++) {
+
+        var fsize = files.item(i).size;
+        _size = _size + fsize;
+
+        console.log("fsize", fsize);
+
+      }
+
+      if (_size > 15000000) {
+        alert("A soma dos arquivos não pode ser maior que 15mega!");
+        _size = 0;
+        return false;
+      }
+
+    }
+
+    if (opcao == "Salvar") jQuery("#modalConfirmarSalvar").modal({ backdrop: 'static', keyboard: false });
+    if (opcao == "Aprovar") jQuery("#modalConfirmar").modal({ backdrop: 'static', keyboard: false });
+
+  }
+
+  protected async editar(opcao) {
+
+    jQuery("#btnSalvar").prop("disabled", true);
+
+    jQuery("#modalConfirmarSalvar").modal('hide');
+    jQuery("#modalCarregando").modal({ backdrop: 'static', keyboard: false });
+
+    var name = jQuery("#txtName").val();
+    var category = jQuery("#ddlCategory option:selected").val();
+    var type = jQuery("#ddlType option:selected").val();
+    var ompDocuments = jQuery("#txtOMPDocuments").val();
+
+    if (_ownerTevelateracao) {
+
+      var arrPeoplepickerOwner = [];
+      for (let i = 0; i < _arrOwner.length; i++) {
+        console.log('_arrOwner[i]["id"]', _arrOwner[i]["id"]);
+        arrPeoplepickerOwner.push(_arrOwner[i]["id"]);
+      }
+
+    } else {
+      arrPeoplepickerOwner = _arrOwnerID;
+    }
+
+    if (_participantsTevelateracao) {
+
+      var arrPeoplepickerParticipants = [];
+      for (let i = 0; i < _arrParticipants.length; i++) {
+        arrPeoplepickerParticipants.push(_arrParticipants[i]["id"]);
+      }
+
+    }
+
+    else {
+
+      arrPeoplepickerParticipants = _arrParticipantsID;
+
+    }
+
+    var arrClient = Array.prototype.slice.call(document.querySelectorAll('#ddlCliente2 option'), 0).map(function (v, i, a) {
+      return v.value;
+    });
+
+    console.log("_arrOwner 1", _arrOwner);
+    console.log("arrPeoplepickerOwner 1", arrPeoplepickerOwner);
+
+    await _web.lists
+      .getByTitle("Projects List")
+      .items.getById(_projectID).update({
+        Title: name,
+        ProjCategory: category,
+        Project_x0020_type: type,
+        AssignedToId: { 'results': arrPeoplepickerOwner },
+        ParticipantsId: { 'results': arrPeoplepickerParticipants },
+        Product_x0020_description_x0020_: _productDescription,
+        Critical_x0020_requirements: _criticalRequirements,
+        ClientId: { "results": arrClient },
+        OMP_x0020_documents: ompDocuments
+      })
+      .then(response => {
+        console.log("editou!!");
+        this.upload(opcao);
+      })
+      .catch((error: any) => {
+        console.log(error);
+      })
+
+  }
+
+  protected async upload(opcao) {
+
+    console.log("Entrou no upload");
+
+    var files = (document.querySelector("#input") as HTMLInputElement).files;
+    var file = files[0];
+
+    //console.log("files.length", files.length);
+
+    if (files.length != 0) {
+
+      if (_pastaCriada != "Sim") {
+
+        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_projectID}`).then(async data => {
+
+          await _web.lists
+            .getByTitle("Projects List")
+            .items.getById(_projectID).update({
+              PastaCriada: "Sim",
+            })
+            .then(async response => {
+
+              for (var i = 0; i < files.length; i++) {
+
+                var nomeArquivo = files[i].name;
+                var rplNomeArquivo = nomeArquivo.replace(/[^0123456789.,a-zA-Z]/g, '');
+
+                //alert(rplNomeArquivo);
+                //Upload a file to the SharePoint Library
+                _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_projectID}`)
+                  //.files.add(files[i].name, files[i], true)
+                  .files.add(rplNomeArquivo, files[i], true)
+                  .then(async data => {
+
+                    if (i == files.length) {
+                      console.log("anexou:" + rplNomeArquivo);
+                      jQuery("#modalCarregando").modal('hide');
+                      if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+                    }
+                  });
+              }
 
 
+            }).catch(err => {
+              console.log("err", err);
+            });
+
+
+
+        }).catch(err => {
+          console.log("err", err);
+        });
+
+      }
+      else {
+
+        await _web.lists
+          .getByTitle("Projects List")
+          .items.getById(_projectID).update({
+            PastaCriada: "Sim",
+          })
+          .then(async response => {
+
+            for (var i = 0; i < files.length; i++) {
+
+              var nomeArquivo = files[i].name;
+              var rplNomeArquivo = nomeArquivo.replace(/[^0123456789.,a-zA-Z]/g, '');
+
+              //alert(rplNomeArquivo);
+              //Upload a file to the SharePoint Library
+              _web.getFolderByServerRelativeUrl(`${_caminho}/Anexos/${_projectID}`)
+                //.files.add(files[i].name, files[i], true)
+                .files.add(rplNomeArquivo, files[i], true)
+                .then(async data => {
+
+                  if (i == files.length) {
+                    console.log("anexou:" + rplNomeArquivo);
+                    jQuery("#modalCarregando").modal('hide');
+                    if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+                  }
+                });
+            }
+
+
+          }).catch(err => {
+            console.log("err", err);
+          });
+
+
+
+        //const folderAddResult = _web.folders.add(`${_caminho}/Anexos/${_idProposta}`);
+        //console.log("foi");
+      }
+
+    } else {
+
+      if (_pastaCriada != "Sim") {
+
+        _web.lists.getByTitle("Anexos").rootFolder.folders.add(`${_projectID}`).then(async data => {
+
+          console.log("Gravou!!");
+          jQuery("#modalCarregando").modal('hide');
+          if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+
+        }).catch(err => {
+          console.log("err", err);
+        });
+
+      } else {
+
+        console.log("Gravou!!");
+        jQuery("#modalCarregando").modal('hide');
+        if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+
+      }
+
+    }
+
+
+
+  }
+
+
+  protected async fecharSucessoEditar(opcao) {
+
+    jQuery("#modalSucessoSalvar").modal('hide');
+
+    if (opcao == "Salvar") window.location.href = `Solicitacao-Editar.aspx?ProjectID=` + _projectID;
+
+  }
 
 
   private getDefaultUsers() {
@@ -1527,23 +2478,25 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
       });
 
-    }, 2000);
+    }, 1000);
 
 
   }
 
-
   private _getPeoplePickerOwner(items: any[]) {
+    _ownerTevelateracao = true;
     _arrOwner = items;
     console.log('Items:', items);
   }
 
   private _getPeoplePickerAtribuidoARelatedIssues(items: any[]) {
+    _atribuidoARelatedIssuesTeveAlteracao = true;
     _atribuidoARelatedIssues = items;
     console.log('Items:', items);
   }
 
   private _getPeoplePickerParticipants(items: any[]) {
+    _participantsTevelateracao = true;
     _arrParticipants = items;
     console.log('Items:', items);
   }
@@ -1595,8 +2548,29 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     });
   }
 
+  private onTextChangeDataVencimentoRelatedIssues = (val) => {
 
+    this.setState({
+      valorItemsDataVencimentoRelatedIssues: val,
+    });
 
+  }
+
+  private onTextChangeDataVencimentoRelatedMilestones = (val) => {
+
+    this.setState({
+      valorItemsDataVencimentoRelatedMilestones: val,
+    });
+
+  }
+
+  private onTextChangeProjectMilestoneRelatedMilestones = (val) => {
+
+    this.setState({
+      valorProjectMilestoneRelatedMilestones: val,
+    });
+
+  }
 
 
 }
