@@ -22,7 +22,10 @@
     transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 } 
 
-
+.tituloDetalhes{
+    width: 500px !important;
+    background-color: aqua;
+}
 
 
 .filter-label{

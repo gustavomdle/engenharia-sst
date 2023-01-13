@@ -21,7 +21,9 @@ export default class SstListarProjectsTodosWebPart extends BaseClientSideWebPart
     const element: React.ReactElement<ISstListarProjectsTodosProps> = React.createElement(
       SstListarProjectsTodos,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 

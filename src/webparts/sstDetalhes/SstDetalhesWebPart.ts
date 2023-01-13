@@ -21,7 +21,9 @@ export default class SstDetalhesWebPart extends BaseClientSideWebPart<ISstDetalh
     const element: React.ReactElement<ISstDetalhesProps> = React.createElement(
       SstDetalhes,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
       }
     );
 

@@ -52,6 +52,10 @@ var _participantsTevelateracao = false;
 var _idRelatedMilestones;
 var _size: number = 0;
 var _pastaCriada = "";
+var _grupos;
+var _statusAtual;
+var _siteNovo;
+var _projectTitle;
 
 export interface IReactGetItemsState {
 
@@ -137,7 +141,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
   }
 
 
-  public componentDidMount() {
+  public async componentDidMount() {
 
     _web = new Web(this.props.context.pageContext.web.absoluteUrl);
     _caminho = this.props.context.pageContext.web.serverRelativeUrl;
@@ -198,12 +202,28 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       .addEventListener("click", (e: Event) => this.validar("Salvar"));
 
     document
+      .getElementById("btnConfirmarFluxo")
+      .addEventListener("click", (e: Event) => this.validar("Aprovar"));
+
+    document
       .getElementById("btnSalvar")
       .addEventListener("click", (e: Event) => this.editar("Salvar"));
 
     document
+      .getElementById("btnIniciarFluxo")
+      .addEventListener("click", (e: Event) => this.editar("Aprovar"));
+
+    document
       .getElementById("btnSucessoSalvar")
       .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
+
+      document
+      .getElementById("btnSucessoAprovar")
+      .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Aprovar"));
+      
+    document
+      .getElementById("btnVoltar")
+      .addEventListener("click", (e: Event) => this.voltar());
 
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
@@ -212,10 +232,52 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
        da Internet essa ação pode demorar um pouco. <br>
        Não fechar a janela!<br/><br/>`);
 
-    this.handler();
+    await _web.currentUser.get().then(f => {
+      console.log("user", f);
+      var id = f.Id;
+
+      var grupos = [];
+
+      jQuery.ajax({
+        url: `${this.props.siteurl}/_api/web/GetUserById(${id})/Groups`,
+        type: "GET",
+        headers: { 'Accept': 'application/json; odata=verbose;' },
+        async: false,
+        success: async function (resultData) {
+
+          console.log("resultDataGrupo", resultData);
+
+          if (resultData.d.results.length > 0) {
+
+            for (var i = 0; i < resultData.d.results.length; i++) {
+
+              grupos.push(resultData.d.results[i].Title);
+
+            }
+
+          }
+
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.log(textStatus);
+        }
+
+      })
+
+      console.log("grupos", grupos);
+      _grupos = grupos;
+
+    })
+
+    jQuery("#btnConfirmarSalvar").hide();
+    jQuery("#btnAbrirModalCadastrarRelatedIssues").hide();
+    jQuery("#btnAbrirModalCadastrarMilestones").hide();
+    jQuery("#btnConfirmarFluxo").hide();
+
     this.getProject();
     this.getDefaultUsers();
     this.getAnexos();
+    this.handler();
 
 
   }
@@ -261,7 +323,13 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
-          var atribuidoA = row.AssignedTo.results[0].Title;
+          var atribuidoA;
+          if (_siteNovo) {
+            atribuidoA = row.AssignedTo.results[0].Title;
+          }
+          else {
+            atribuidoA = row.Assigned_x0020_To_x0020_2;
+          }
           console.log("atribuidoA", atribuidoA);
           return atribuidoA;
         }
@@ -298,7 +366,12 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          return <div dangerouslySetInnerHTML={{ __html: `${row.V3Comments}` }} />;
+          var comentarios = row.V3Comments;
+          var vlrComentario = "";
+
+          if (comentarios != null) vlrComentario = row.V3Comments;
+
+          return <div dangerouslySetInnerHTML={{ __html: `${vlrComentario}` }} />;
 
         }
       },
@@ -431,8 +504,12 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          return <div dangerouslySetInnerHTML={{ __html: `${row.ProjComments}` }} />;
+          var comentarios = row.ProjComments;
+          var vlrComentario = "";
 
+          if (comentarios != null) vlrComentario = row.ProjComments;
+
+          return <div dangerouslySetInnerHTML={{ __html: `${vlrComentario}` }} />;
         }
       },
       {
@@ -508,6 +585,18 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
             </div>
             <div id="collapseProjectInformation" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
+
+                <div className="form-group">
+                  <div className="form-row">
+                    <div className="form-group col-md text-info ">
+                      <b>Solicitação <span id='txtID'></span></b><br></br>
+                      Status: <span id='txtStatus'></span>
+                    </div>
+                    <div className="form-group col-md text-secondary right ">
+
+                    </div>
+                  </div>
+                </div>
 
                 <div className="form-group">
                   <div className="form-row">
@@ -702,10 +791,10 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
                         var txtAnexoItem = "anexoItem" + _pos;
                         var btnExcluirAnexoitem = "btnExcluirAnexoitem" + _pos;
 
-                        var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_projectID}')/AttachmentFiles`;
-                        url = this.props.siteurl;
+                        //var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Anexos')/items('${_projectID}')/AttachmentFiles`;
+                        var url = this.props.siteurl;
 
-                        var caminho = `${url}/Lists/Documentos/Attachments/${_projectID}/${item.FileName}`;
+                        var caminho = `${url}/Lists/Projects/Attachments/${_projectID}/${item.FileName}`;
 
                         return (
 
@@ -785,14 +874,13 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
             </div>
           </div>
 
-
-
-
         </div>
       </div>
 
         <br></br><div className="text-right">
-          <button id="btnConfirmarSalvar" className="btn btn-success">Salvar</button>
+          <button style={{ "margin": "2px" }} type="submit" id="btnVoltar" className="btn btn-secondary">Voltar</button>
+          <button style={{ "margin": "2px" }} id="btnConfirmarSalvar" className="btn btn-success">Salvar</button>
+          <button style={{ "margin": "2px" }} id="btnConfirmarFluxo" className="btn btn-success">Iniciar fluxo</button>
         </div>
 
         <div className="modal fade" id="modalCadastrarRelatedIssues" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -1223,6 +1311,23 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           </div>
         </div>
 
+        <div className="modal fade" id="modalConfirmarAprovar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Confirmação</h5>
+              </div>
+              <div className="modal-body">
+                Deseja realmente iniciar o Fluxo?
+              </div>
+              <div className="modal-footer">
+                <button type="button" className="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button id="btnIniciarFluxo" type="button" className="btn btn-primary">Sim</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="modal fade" id="modalSucessoSalvar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
           <div className="modal-dialog" role="document">
             <div className="modal-content">
@@ -1234,6 +1339,22 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
               </div>
               <div className="modal-footer">
                 <button type="button" id="btnSucessoSalvar" className="btn btn-primary">OK</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal fade" id="modalSucessoAprovar" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Alerta</h5>
+              </div>
+              <div className="modal-body">
+                Fluxo iniciado com sucesso!
+              </div>
+              <div className="modal-footer">
+                <button type="button" id="btnSucessoAprovar" className="btn btn-primary">OK</button>
               </div>
             </div>
           </div>
@@ -1362,8 +1483,19 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
     var reactHandlerRelatedIssues = this;
 
+    if (_siteNovo) {
+
+      var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/ID,AssignedTo/Title,DueDate,Comment,Category,V3Comments,Assigned_x0020_To_x0020_2&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID;
+    }
+    else {
+
+      var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/ID,AssignedTo/Title,DueDate,Comment,Category,V3Comments,Assigned_x0020_To_x0020_2&$expand=AssignedTo&$filter=Project_x0020_TXT eq '${_projectTitle}'`;
+
+    }
+
+
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Issues')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,Status,AssignedTo/ID,AssignedTo/Title,DueDate,Comment,Category,V3Comments&$expand=AssignedTo&$filter=Project/ID eq ` + _projectID,
+      url: url,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1385,8 +1517,18 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
     var reactHandlerRelatedMilestones = this;
 
+    if (_siteNovo) {
+
+      var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project/ID eq ` + _projectID;
+    }
+    else {
+
+      var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project_x0020_TXT eq '${_projectTitle}'`;
+
+    }
+
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project/ID eq ` + _projectID,
+      url: url,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -1414,7 +1556,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
   protected getProject() {
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,OMP_x0020_documents&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,OMP_x0020_documents,ProjStatus,SiteNovoSO,Owner_x0020_2,Participants_x0020_2&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       async: false,
@@ -1426,10 +1568,26 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
           for (var i = 0; i < resultData.d.results.length; i++) {
 
+            var id = resultData.d.results[i].ID;
+            var status = resultData.d.results[i].ProjStatus;
+            var title = resultData.d.results[i].Title;
+
+            _projectTitle = title;
+
+            _statusAtual = status;
+
+            jQuery("#txtID").html(id);
+            jQuery("#txtStatus").html(status);
+
             var nome = resultData.d.results[i].Title;
             var category = resultData.d.results[i].ProjCategory;
             var tipo = resultData.d.results[i].Project_x0020_type;
             var omp = resultData.d.results[i].OMP_x0020_documents;
+
+            var siteNovo = resultData.d.results[i].SiteNovoSO;
+            _siteNovo = siteNovo;
+
+            console.log("siteNovo", siteNovo);
 
             if (resultData.d.results[i].AssignedTo.hasOwnProperty('results')) {
 
@@ -1508,6 +1666,48 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
             }
 
+
+            if ((status == "Não Iniciada") || (status == "Em Andamento") || (status == "Adiada")) {
+
+              if (_grupos.indexOf("SST - Elaboradores") !== -1) {
+
+                jQuery("#btnConfirmarSalvar").show();
+                jQuery("#btnAbrirModalCadastrarRelatedIssues").show();
+                jQuery("#btnAbrirModalCadastrarMilestones").show();
+                jQuery(".btnEdicaoListas").show();
+
+                if ((status == "Não Iniciada") || (status == "Adiada")) {
+
+                  setTimeout(() => {
+
+                    jQuery("#btnConfirmarFluxo").show();
+  
+                  }, 1000);
+                  
+                }
+
+              } else {
+
+                setTimeout(() => {
+
+                  jQuery(".btnEdicaoListas").hide();
+
+                }, 1000);
+
+              }
+
+              
+
+            } else {
+
+
+              setTimeout(() => {
+
+                jQuery(".btnEdicaoListas").hide();
+
+              }, 1000);
+
+            }
 
           }
         }
@@ -2261,7 +2461,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     }
 
     if (opcao == "Salvar") jQuery("#modalConfirmarSalvar").modal({ backdrop: 'static', keyboard: false });
-    if (opcao == "Aprovar") jQuery("#modalConfirmar").modal({ backdrop: 'static', keyboard: false });
+    if (opcao == "Aprovar") jQuery("#modalConfirmarAprovar").modal({ backdrop: 'static', keyboard: false });
 
   }
 
@@ -2270,6 +2470,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     jQuery("#btnSalvar").prop("disabled", true);
 
     jQuery("#modalConfirmarSalvar").modal('hide');
+    jQuery("#modalConfirmarAprovar").modal('hide');
     jQuery("#modalCarregando").modal({ backdrop: 'static', keyboard: false });
 
     var name = jQuery("#txtName").val();
@@ -2311,6 +2512,11 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
     console.log("_arrOwner 1", _arrOwner);
     console.log("arrPeoplepickerOwner 1", arrPeoplepickerOwner);
 
+    var status;
+
+    if (opcao == "Aprovar") status = "Em Andamento";
+    else status = _statusAtual;
+
     await _web.lists
       .getByTitle("Projects List")
       .items.getById(_projectID).update({
@@ -2322,7 +2528,8 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         Product_x0020_description_x0020_: _productDescription,
         Critical_x0020_requirements: _criticalRequirements,
         ClientId: { "results": arrClient },
-        OMP_x0020_documents: ompDocuments
+        OMP_x0020_documents: ompDocuments,
+        ProjStatus: status
       })
       .then(response => {
         console.log("editou!!");
@@ -2372,6 +2579,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
                       console.log("anexou:" + rplNomeArquivo);
                       jQuery("#modalCarregando").modal('hide');
                       if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+                      if (opcao == "Aprovar") jQuery("#modalSucessoAprovar").modal({ backdrop: 'static', keyboard: false });
                     }
                   });
               }
@@ -2413,6 +2621,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
                     console.log("anexou:" + rplNomeArquivo);
                     jQuery("#modalCarregando").modal('hide');
                     if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+                    if (opcao == "Aprovar") jQuery("#modalSucessoAprovar").modal({ backdrop: 'static', keyboard: false });
                   }
                 });
             }
@@ -2437,6 +2646,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
           console.log("Gravou!!");
           jQuery("#modalCarregando").modal('hide');
           if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+          if (opcao == "Aprovar") jQuery("#modalSucessoAprovar").modal({ backdrop: 'static', keyboard: false });
 
         }).catch(err => {
           console.log("err", err);
@@ -2447,6 +2657,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
         console.log("Gravou!!");
         jQuery("#modalCarregando").modal('hide');
         if (opcao == "Salvar") jQuery("#modalSucessoSalvar").modal({ backdrop: 'static', keyboard: false });
+        if (opcao == "Aprovar") jQuery("#modalSucessoAprovar").modal({ backdrop: 'static', keyboard: false });
 
       }
 
@@ -2460,8 +2671,10 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
   protected async fecharSucessoEditar(opcao) {
 
     jQuery("#modalSucessoSalvar").modal('hide');
+    jQuery("#modalSucessoAprovar").modal('hide');
 
     if (opcao == "Salvar") window.location.href = `Solicitacao-Editar.aspx?ProjectID=` + _projectID;
+    if (opcao == "Aprovar") window.location.href = `Solicitacao-Todos.aspx`;
 
   }
 
@@ -2478,7 +2691,7 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
 
       });
 
-    }, 1000);
+    }, 500);
 
 
   }
@@ -2570,6 +2783,10 @@ export default class SstEditarProject extends React.Component<ISstEditarProjectP
       valorProjectMilestoneRelatedMilestones: val,
     });
 
+  }
+
+  protected voltar() {
+    history.back();
   }
 
 

@@ -13,6 +13,7 @@ import { ISstListarProjectsPorStatusProps } from './components/ISstListarProject
 
 export interface ISstListarProjectsPorStatusWebPartProps {
   description: string;
+  statusSolicitacao: string
 }
 
 export default class SstListarProjectsPorStatusWebPart extends BaseClientSideWebPart<ISstListarProjectsPorStatusWebPartProps> {
@@ -21,7 +22,10 @@ export default class SstListarProjectsPorStatusWebPart extends BaseClientSideWeb
     const element: React.ReactElement<ISstListarProjectsPorStatusProps> = React.createElement(
       SstListarProjectsPorStatus,
       {
-        description: this.properties.description
+        description: this.properties.description,
+        context: this.context,
+        siteurl: this.context.pageContext.web.absoluteUrl,
+        statusSolicitacao: this.properties.statusSolicitacao,
       }
     );
 
@@ -49,6 +53,9 @@ export default class SstListarProjectsPorStatusWebPart extends BaseClientSideWeb
               groupFields: [
                 PropertyPaneTextField('description', {
                   label: strings.DescriptionFieldLabel
+                }),
+                PropertyPaneTextField('statusSolicitacao', {
+                  label: "Status da Solicitação"
                 })
               ]
             }
