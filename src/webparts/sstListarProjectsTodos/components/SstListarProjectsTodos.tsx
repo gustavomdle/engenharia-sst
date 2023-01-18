@@ -78,13 +78,6 @@ const empTablecolumns = [
     }
   },
   {
-    dataField: "ProjCategory",
-    text: "Categoria",
-    headerStyle: { backgroundColor: '#bee5eb' },
-    sort: true,
-    filter: customFilter
-  },
-  {
     dataField: "ProjStatus",
     text: "Status",
     headerStyle: { backgroundColor: '#bee5eb' },
@@ -222,7 +215,7 @@ export default class SstListarProjectsTodos extends React.Component<ISstListarPr
 
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client`,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -243,7 +236,7 @@ export default class SstListarProjectsTodos extends React.Component<ISstListarPr
 
     return (
 
-      <><p>Resultado: <span className="text-info" id="txtCount"></span> DIPS encontrado(s)</p>
+      <><p>Resultado: <span className="text-info" id="txtCount"></span> registro(s) encontrado(s)</p>
         <div className={styles.container}>
           <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItens" keyField='id' data={this.state.itemsList} columns={empTablecolumns} headerClasses="header-class" pagination={paginationFactory(paginationOptions)} filter={filterFactory()} />
         </div></>

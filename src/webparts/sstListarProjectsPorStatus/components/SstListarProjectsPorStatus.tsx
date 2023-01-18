@@ -79,13 +79,6 @@ const empTablecolumns = [
     }
   },
   {
-    dataField: "ProjCategory",
-    text: "Categoria",
-    headerStyle: { backgroundColor: '#bee5eb' },
-    sort: true,
-    filter: customFilter
-  },
-  {
     dataField: "Created",
     text: "Data de criação",
     headerStyle: { backgroundColor: '#bee5eb' },
@@ -215,11 +208,11 @@ export default class SstListarProjectsPorStatus extends React.Component<ISstList
 
     var statusSolicitacao = this.props.statusSolicitacao;
 
-    if (statusSolicitacao == "Não iniciada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Não iniciada'`;
-    else if(statusSolicitacao == "Em andamento") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Em andamento'`;
-    else if (statusSolicitacao == "Concluída") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Concluída'`;
-    else if (statusSolicitacao == "Cancelada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Cancelada'`;
-    else if (statusSolicitacao == "Adiada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= ID desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Adiada'`;
+    if (statusSolicitacao == "Não iniciada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Não iniciada'`;
+    else if(statusSolicitacao == "Em andamento") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Em andamento'`;
+    else if (statusSolicitacao == "Concluída") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Concluída'`;
+    else if (statusSolicitacao == "Cancelada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Cancelada'`;
+    else if (statusSolicitacao == "Adiada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Adiada'`;
 
     jQuery.ajax({
       url: url,
@@ -243,7 +236,7 @@ export default class SstListarProjectsPorStatus extends React.Component<ISstList
 
     return (
 
-    <><p>Resultado: <span className="text-info" id="txtCount"></span> DIPS encontrado(s)</p>
+    <><p>Resultado: <span className="text-info" id="txtCount"></span> registro(s) encontrada(s)</p>
     <div className={styles.container}>
       <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItens" keyField='id' data={this.state.itemsList} columns={empTablecolumns} headerClasses="header-class" pagination={paginationFactory(paginationOptions)} filter={filterFactory()} />
     </div></>
