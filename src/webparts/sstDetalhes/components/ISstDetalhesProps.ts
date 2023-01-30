@@ -4,4 +4,5 @@ export interface ISstDetalhesProps {
   description: string;
   context: WebPartContext;
   siteurl: string;
+  idListaProject: string;
 }

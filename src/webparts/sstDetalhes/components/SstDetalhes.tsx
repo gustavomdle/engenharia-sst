@@ -247,9 +247,6 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     jQuery("#btnConfirmarConcluir").hide();
     jQuery("#btnEditar").hide();
 
-
-
-
   }
 
   public render(): React.ReactElement<ISstDetalhesProps> {
@@ -457,6 +454,20 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                     <div className="form-group border m-1 col-md">
                       <label className="text-info" htmlFor="txtParticipantes">Participantes</label><span className="required"> *</span>
                       <br /><span id="txtParticipantes"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <div className="form-row">
+                    <div className="form-group border m-1 col-md">
+                      <label className="text-info" htmlFor="txtOwner">Data Inicial</label><span className="required"> *</span>
+                      <br /><span id="txtDataInicial"></span>
+
+                    </div>
+                    <div className="form-group border m-1 col-md">
+                      <label className="text-info" htmlFor="txtParticipantes">Data Final</label><span className="required"> *</span>
+                      <br /><span id="txtDataFinal"></span>
                     </div>
                   </div>
                 </div>
@@ -906,13 +917,13 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
   protected getProject() {
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,SiteNovoSO,Owner_x0020_2,Participants_x0020_2&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,SiteNovoSO,Owner_x0020_2,Participants_x0020_2,StartDate,EndDate&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       async: false,
       success: async (resultData) => {
 
-        //  console.log("resultData doc", resultData);
+        console.log("resultData doc", resultData);
 
         if (resultData.d.results.length > 0) {
 
@@ -938,14 +949,22 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
             console.log("siteNovo", siteNovo);
 
+            var dataInicial = new Date(resultData.d.results[i].StartDate);
+            var dtdataInicial = ("0" + dataInicial.getDate()).slice(-2) + '/' + ("0" + (dataInicial.getMonth() + 1)).slice(-2) + '/' + dataInicial.getFullYear();
+
+            var dataFinal = new Date(resultData.d.results[i].EndDate);
+            var dtdataFinal = ("0" + dataFinal.getDate()).slice(-2) + '/' + ("0" + (dataFinal.getMonth() + 1)).slice(-2) + '/' + dataFinal.getFullYear();
+
             jQuery("#txtID").html(id);
             jQuery("#txtStatus").html(status);
             jQuery("#txtName").html(nome);
             jQuery("#txtCategoria").html(category);
             jQuery("#txtTipo").html(tipo);
-            jQuery("#txtDescricaoProduto").html(descricaoProduto);
-            jQuery("#txtRequisitosCriticos").html(requisitosCriticos);
+            // jQuery("#txtDescricaoProduto").html(descricaoProduto);
+            //jQuery("#txtRequisitosCriticos").html(requisitosCriticos);
             jQuery("#txtOMPDocuments").html(omp);
+            jQuery("#txtDataInicial").html(dtdataInicial);
+            jQuery("#txtDataFinal").html(dtdataFinal);
 
             if (siteNovo) {
 
@@ -1046,6 +1065,125 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       }
 
     })
+
+    var idLista = this.props.idListaProject;
+
+    if(idLista == "") {
+      
+      alert("GUID da lista não encontrado nas configuraçãoes da webpart");
+    
+    }
+
+    var soapPack = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+      <soap:Body>
+      <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+      <strlistID>${idLista}</strlistID>
+      <strlistItemID>${_projectID}</strlistItemID>
+      <strFieldName>Product_x0020_description_x0020_</strFieldName>
+      </GetVersionCollection>
+      </soap:Body>
+      </soap:Envelope>`;
+
+    $.ajax({
+      type: "POST",
+      url: this.props.siteurl + '/_vti_bin/lists.asmx',
+      data: soapPack,
+      dataType: "xml",
+      async: false,
+      contentType: "text/xml; charset=\"utf-8\"",
+      success: function (xData, status) {
+
+        var strDescricaoProduto = "";
+
+        console.log("xData", xData)
+
+        $(xData).find("Versions").find("Version").each(function () {
+
+          var textoEditor = $(this).attr("Editor");
+
+          console.log("textoEditor", textoEditor);
+
+          var editor1 = textoEditor.substring(textoEditor.indexOf("#") + 1);
+          var editor2 = editor1.split('#')[0];
+
+          var dtModified = new Date($(this).attr("Modified"));
+          //  dtModified = moment(dtModified).format('DD/MM/YYYY HH:mm');
+
+          var dtModified = new Date($(this).attr("Modified"));
+          var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
+
+
+          strDescricaoProduto += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Product_x0020_description_x0020_");
+          strDescricaoProduto = strDescricaoProduto.replace("undefined", "");
+          strDescricaoProduto = strDescricaoProduto.replace(",(", " (");
+          strDescricaoProduto = strDescricaoProduto.replace(",,", ",");
+
+        });
+
+        //console.log("strProdutoDescricao",strProdutoDescricao);
+        jQuery("#txtDescricaoProduto").html(strDescricaoProduto);
+      },
+      error: function (e) {
+        console.log("e", e);
+      }
+    });
+
+
+    var soapPack2 = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+    <soap:Body>
+    <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+    <strlistID>${idLista}</strlistID>
+    <strlistItemID>${_projectID}</strlistItemID>
+    <strFieldName>Critical_x0020_requirements</strFieldName>
+    </GetVersionCollection>
+    </soap:Body>
+    </soap:Envelope>`;
+
+  $.ajax({
+    type: "POST",
+    url: this.props.siteurl + '/_vti_bin/lists.asmx',
+    data: soapPack2,
+    dataType: "xml",
+    async: false,
+    contentType: "text/xml; charset=\"utf-8\"",
+    success: function (xData, status) {
+
+      var strRequisitosCriticos = "";
+
+      console.log("xData", xData)
+
+      $(xData).find("Versions").find("Version").each(function () {
+
+        var textoEditor2 = $(this).attr("Editor");
+
+        console.log("textoEditor", textoEditor2);
+
+        var editor1 = textoEditor2.substring(textoEditor2.indexOf("#") + 1);
+        var editor2 = editor1.split('#')[0];
+
+        var dtModified = new Date($(this).attr("Modified"));
+        //  dtModified = moment(dtModified).format('DD/MM/YYYY HH:mm');
+
+        var dtModified = new Date($(this).attr("Modified"));
+        var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
+
+
+        strRequisitosCriticos += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Product_x0020_description_x0020_");
+        strRequisitosCriticos = strRequisitosCriticos.replace("undefined", "");
+        strRequisitosCriticos = strRequisitosCriticos.replace(",(", " (");
+        strRequisitosCriticos = strRequisitosCriticos.replace(",,", ",");
+
+      });
+
+      //console.log("strProdutoDescricao",strProdutoDescricao);
+      jQuery("#txtRequisitosCriticos").html(strRequisitosCriticos);
+    },
+    error: function (e) {
+      console.log("e", e);
+    }
+  });
+
+
 
   }
 

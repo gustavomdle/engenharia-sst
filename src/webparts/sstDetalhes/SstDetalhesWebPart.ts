@@ -13,6 +13,7 @@ import { ISstDetalhesProps } from './components/ISstDetalhesProps';
 
 export interface ISstDetalhesWebPartProps {
   description: string;
+  idListaProject: string;
 }
 
 export default class SstDetalhesWebPart extends BaseClientSideWebPart<ISstDetalhesWebPartProps> {
@@ -24,6 +25,7 @@ export default class SstDetalhesWebPart extends BaseClientSideWebPart<ISstDetalh
         description: this.properties.description,
         context: this.context,
         siteurl: this.context.pageContext.web.absoluteUrl,
+        idListaProject: this.properties.idListaProject
       }
     );
 
@@ -51,6 +53,9 @@ export default class SstDetalhesWebPart extends BaseClientSideWebPart<ISstDetalh
               groupFields: [
                 PropertyPaneTextField('description', {
                   label: strings.DescriptionFieldLabel
+                }),
+                PropertyPaneTextField('idListaProject', {
+                  label: "GUID da lista Projetos"
                 })
               ]
             }
