@@ -306,7 +306,10 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
           var data = new Date(row.DueDate);
+          if(data != null){
           var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          }
+          else dtdata = "";
           return dtdata;
         }
       },
@@ -358,7 +361,11 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
           var data = new Date(row.DueDate);
-          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          console.log("data",data);
+          if(row.DueDate != null){
+            var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+            }
+            else dtdata = "";
           return dtdata;
         }
       },
@@ -950,10 +957,27 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
             console.log("siteNovo", siteNovo);
 
             var dataInicial = new Date(resultData.d.results[i].StartDate);
-            var dtdataInicial = ("0" + dataInicial.getDate()).slice(-2) + '/' + ("0" + (dataInicial.getMonth() + 1)).slice(-2) + '/' + dataInicial.getFullYear();
+
+            if (resultData.d.results[i].StartDate != null) {
+
+              var dtdataInicial = ("0" + dataInicial.getDate()).slice(-2) + '/' + ("0" + (dataInicial.getMonth() + 1)).slice(-2) + '/' + dataInicial.getFullYear();
+
+            }
+            else {
+
+              var dtdataInicial = "";
+            }
 
             var dataFinal = new Date(resultData.d.results[i].EndDate);
-            var dtdataFinal = ("0" + dataFinal.getDate()).slice(-2) + '/' + ("0" + (dataFinal.getMonth() + 1)).slice(-2) + '/' + dataFinal.getFullYear();
+
+            if (resultData.d.results[i].EndDate != null) {
+
+              var dtdataFinal = ("0" + dataFinal.getDate()).slice(-2) + '/' + ("0" + (dataFinal.getMonth() + 1)).slice(-2) + '/' + dataFinal.getFullYear();
+
+            } else {
+
+              var dtdataFinal = "";
+            }
 
             jQuery("#txtID").html(id);
             jQuery("#txtStatus").html(status);
@@ -1068,10 +1092,10 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
     var idLista = this.props.idListaProject;
 
-    if(idLista == "") {
-      
+    if (idLista == "") {
+
       alert("GUID da lista não encontrado nas configuraçãoes da webpart");
-    
+
     }
 
     var soapPack = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
@@ -1095,7 +1119,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
         var strDescricaoProduto = "";
 
-        console.log("xData", xData)
+        console.log("xData 1", xData)
 
         $(xData).find("Versions").find("Version").each(function () {
 
@@ -1114,9 +1138,9 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
 
           strDescricaoProduto += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Product_x0020_description_x0020_");
-          strDescricaoProduto = strDescricaoProduto.replace("undefined", "");
-          strDescricaoProduto = strDescricaoProduto.replace(",(", " (");
-          strDescricaoProduto = strDescricaoProduto.replace(",,", ",");
+          //  strDescricaoProduto = strDescricaoProduto.replace("undefined", "");
+          //   strDescricaoProduto = strDescricaoProduto.replace(",(", " (");
+          //  strDescricaoProduto = strDescricaoProduto.replace(",,", ",");
 
         });
 
@@ -1139,49 +1163,49 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     </soap:Body>
     </soap:Envelope>`;
 
-  $.ajax({
-    type: "POST",
-    url: this.props.siteurl + '/_vti_bin/lists.asmx',
-    data: soapPack2,
-    dataType: "xml",
-    async: false,
-    contentType: "text/xml; charset=\"utf-8\"",
-    success: function (xData, status) {
+    $.ajax({
+      type: "POST",
+      url: this.props.siteurl + '/_vti_bin/lists.asmx',
+      data: soapPack2,
+      dataType: "xml",
+      async: false,
+      contentType: "text/xml; charset=\"utf-8\"",
+      success: function (xData, status) {
 
-      var strRequisitosCriticos = "";
+        var strRequisitosCriticos = "";
 
-      console.log("xData", xData)
+        console.log("xData 2", xData)
 
-      $(xData).find("Versions").find("Version").each(function () {
+        $(xData).find("Versions").find("Version").each(function () {
 
-        var textoEditor2 = $(this).attr("Editor");
+          var textoEditor2 = $(this).attr("Editor");
 
-        console.log("textoEditor", textoEditor2);
+          console.log("textoEditor", textoEditor2);
 
-        var editor1 = textoEditor2.substring(textoEditor2.indexOf("#") + 1);
-        var editor2 = editor1.split('#')[0];
+          var editor1 = textoEditor2.substring(textoEditor2.indexOf("#") + 1);
+          var editor2 = editor1.split('#')[0];
 
-        var dtModified = new Date($(this).attr("Modified"));
-        //  dtModified = moment(dtModified).format('DD/MM/YYYY HH:mm');
+          var dtModified = new Date($(this).attr("Modified"));
+          //  dtModified = moment(dtModified).format('DD/MM/YYYY HH:mm');
 
-        var dtModified = new Date($(this).attr("Modified"));
-        var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
+          var dtModified = new Date($(this).attr("Modified"));
+          var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
 
 
-        strRequisitosCriticos += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Product_x0020_description_x0020_");
-        strRequisitosCriticos = strRequisitosCriticos.replace("undefined", "");
-        strRequisitosCriticos = strRequisitosCriticos.replace(",(", " (");
-        strRequisitosCriticos = strRequisitosCriticos.replace(",,", ",");
+          strRequisitosCriticos += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Critical_x0020_requirements");
+          //strRequisitosCriticos = strRequisitosCriticos.replace("undefined", "");
+          //strRequisitosCriticos = strRequisitosCriticos.replace(",(", " (");
+          //strRequisitosCriticos = strRequisitosCriticos.replace(",,", ",");
 
-      });
+        });
 
-      //console.log("strProdutoDescricao",strProdutoDescricao);
-      jQuery("#txtRequisitosCriticos").html(strRequisitosCriticos);
-    },
-    error: function (e) {
-      console.log("e", e);
-    }
-  });
+        //console.log("strProdutoDescricao",strProdutoDescricao);
+        jQuery("#txtRequisitosCriticos").html(strRequisitosCriticos);
+      },
+      error: function (e) {
+        console.log("e", e);
+      }
+    });
 
 
 
