@@ -37,21 +37,30 @@ const customFilter = textFilter({
   placeholder: ' ',  // custom the input placeholder
 });
 
+
 const selectOptions = {
-  'Aguardando aprovação do Suporte': 'Aguardando aprovação do Suporte',
-  'Aprovado': 'Aprovado',
-  'Em elaboração (Engenharia)': 'Em elaboração (Engenharia)',
-  'Em revisão (Engenharia)': 'Em revisão (Engenharia)',
-  'Em revisão (Suporte)': 'Em revisão (Suporte)',
+  'Cancelled': 'Cancelled',
+  'Concluded': 'Concluded',
+  'Not Started': 'Not Started',
+  'Open': 'Open',
+  'Refused': 'Refused',
+  'Suspended': 'Suspended',
 };
 
 const empTablecolumns = [
+  {
+    dataField: "ID",
+    text: "Número",
+    headerStyle: { backgroundColor: '#bee5eb' },
+    sort: true,
+    classes: 'text-center',
+    filter: customFilter
+  },
   {
     dataField: "Title",
     text: "Nome",
     headerStyle: { backgroundColor: '#bee5eb' },
     sort: true,
-    classes: 'text-center',
     filter: customFilter
   },
   {
@@ -78,11 +87,14 @@ const empTablecolumns = [
     }
   },
   {
-    dataField: "ProjStatus",
+    dataField: "Status_x0020_Projeto",
     text: "Status",
     headerStyle: { backgroundColor: '#bee5eb' },
     sort: true,
-    filter: customFilter
+    filter: selectFilter({
+      options: selectOptions,
+      placeholder: 'Selecione',
+    }),
   },
   {
     dataField: "Created",
@@ -114,7 +126,7 @@ const empTablecolumns = [
       var urlDetalhes = `Solicitacao-Detalhes.aspx?ProjectID=` + id;
       var urlEditar = `Solicitacao-Editar.aspx?ProjectID=` + id;
 
-      if((status == "Não Iniciada") || (status == "Em Andamento") || (status == "Adiada")) {
+      if ((status == "Não Iniciada") || (status == "Em Andamento") || (status == "Adiada")) {
 
         if (_grupos.indexOf("SST - Elaboradores") !== -1) {
 
@@ -135,7 +147,7 @@ const empTablecolumns = [
 
         }
 
-      }else{
+      } else {
 
         return (
           <>
@@ -215,7 +227,7 @@ export default class SstListarProjectsTodos extends React.Component<ISstListarPr
 
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client`,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,Status_x0020_Projeto&$expand=AssignedTo,Author,Participants,Client`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {

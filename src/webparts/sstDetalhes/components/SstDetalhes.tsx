@@ -56,6 +56,7 @@ var _grupos;
 var _correntUser;
 var _projectTitle;
 var _siteNovo;
+var _projectMilestone;
 
 export interface IReactGetItemsState {
 
@@ -68,6 +69,30 @@ export interface IReactGetItemsState {
     {
       "FileName": any,
       "ServerRelativeUrl": any,
+    }
+  ],
+  itemsListForum: [
+    {
+      "ID": any,
+      "idAntigo": any,
+      "Project_x0020_Name": any,
+      "Subject": any,
+      "Created2010": any,
+      "Created_x0020_By_x0020_2010": any,
+      "Body": any,
+      "Respostas": any,
+      "To": any
+    }
+  ],
+  itemsListForumRespostas: [
+    {
+      "Project_x0020_Name": any,
+      "Subject": any,
+      "Created2010": any,
+      "Created_x0020_By_x0020_2010": any,
+      "Body": any,
+      "Respostas": any,
+      "To": any
     }
   ],
   itemsListAnexos: [
@@ -86,6 +111,7 @@ export interface IReactGetItemsState {
   PeoplePickerDefaultItemsOwner: string[],
   PeoplePickerDefaultItemsParticipants: string[],
   itemsListRelatedMilestones: any[],
+  itemsListTarefas: any[],
   itemsListRelatedIssues: any[],
   PeoplePickerAtribudioARelatedIssues: string[];
   PeoplePickerAtribudioARelatedIssuesEditar: string[];
@@ -113,6 +139,30 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           "ServerRelativeUrl": ""
         }
       ],
+      itemsListForum: [
+        {
+          "ID": "",
+          "idAntigo": "",
+          "Project_x0020_Name": "",
+          "Subject": "",
+          "Created2010": "",
+          "Created_x0020_By_x0020_2010": "",
+          "Body": "",
+          "Respostas": "",
+          "To": ""
+        }
+      ],
+      itemsListForumRespostas: [
+        {
+          "Project_x0020_Name": "",
+          "Subject": "",
+          "Created2010": "",
+          "Created_x0020_By_x0020_2010": "",
+          "Body": "",
+          "Respostas": "",
+          "To": ""
+        }
+      ],
       itemsListAnexos: [
         {
           "Name": "",
@@ -129,6 +179,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       PeoplePickerDefaultItemsOwner: [],
       PeoplePickerDefaultItemsParticipants: [],
       itemsListRelatedMilestones: [],
+      itemsListTarefas: [],
       itemsListRelatedIssues: [],
       PeoplePickerAtribudioARelatedIssues: [],
       PeoplePickerAtribudioARelatedIssuesEditar: [],
@@ -151,45 +202,45 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       .getElementById("btnVoltar")
       .addEventListener("click", (e: Event) => this.voltar());
 
-    document
-      .getElementById("btnConfirmarAdiar")
-      .addEventListener("click", (e: Event) => this.confirmarEditar("Adiar"));
+    // document
+    //   .getElementById("btnConfirmarAdiar")
+    //   .addEventListener("click", (e: Event) => this.confirmarEditar("Adiar"));
 
-    document
-      .getElementById("btnConfirmarCancelar")
-      .addEventListener("click", (e: Event) => this.confirmarEditar("Cancelar"));
+    // document
+    //   .getElementById("btnConfirmarCancelar")
+    //   .addEventListener("click", (e: Event) => this.confirmarEditar("Cancelar"));
 
-    document
-      .getElementById("btnConfirmarConcluir")
-      .addEventListener("click", (e: Event) => this.confirmarEditar("Concluir"));
+    // document
+    //   .getElementById("btnConfirmarConcluir")
+    //   .addEventListener("click", (e: Event) => this.confirmarEditar("Concluir"));
 
-    document
-      .getElementById("btnEditar")
-      .addEventListener("click", (e: Event) => this.editar("Editar"));
+    // document
+    //   .getElementById("btnEditar")
+    //   .addEventListener("click", (e: Event) => this.editar("Editar"));
 
-    document
-      .getElementById("btnAdiar")
-      .addEventListener("click", (e: Event) => this.editar("Adiar"));
+    // document
+    //   .getElementById("btnAdiar")
+    //   .addEventListener("click", (e: Event) => this.editar("Adiar"));
 
-    document
-      .getElementById("btnCancelar")
-      .addEventListener("click", (e: Event) => this.editar("Cancelar"));
+    // document
+    //   .getElementById("btnCancelar")
+    //   .addEventListener("click", (e: Event) => this.editar("Cancelar"));
 
-    document
-      .getElementById("btnConcluir")
-      .addEventListener("click", (e: Event) => this.editar("Concluir"));
+    // document
+    //   .getElementById("btnConcluir")
+    //   .addEventListener("click", (e: Event) => this.editar("Concluir"));
 
-    document
-      .getElementById("btnSucessoAdiar")
-      .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
+    // document
+    //   .getElementById("btnSucessoAdiar")
+    //   .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
 
-    document
-      .getElementById("btnSucessoCancelar")
-      .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
+    // document
+    //   .getElementById("btnSucessoCancelar")
+    //   .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
 
-    document
-      .getElementById("btnSucessoConcluir")
-      .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
+    // document
+    //   .getElementById("btnSucessoConcluir")
+    //   .addEventListener("click", (e: Event) => this.fecharSucessoEditar("Salvar"));
 
     jQuery("#conteudoLoading").html(`<br/><br/><img style="height: 80px; width: 80px" src='${_caminho}/SiteAssets/loading.gif'/>
       <br/>Aguarde....<br/><br/>
@@ -254,21 +305,21 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     const tablecolumnsRelatedIssues = [
       {
         dataField: "Title",
-        text: "Título",
+        text: "Title",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
         dataField: "Priority",
-        text: "Prioridade",
+        text: "Priority",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
         dataField: "Status",
-        text: "Status",
+        text: "Issue Status",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
@@ -282,7 +333,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       },
       {
         dataField: "",
-        text: "Atribuído a",
+        text: "Assigned To",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
@@ -300,14 +351,14 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       },
       {
         dataField: "DueDate",
-        text: "Vencimento",
+        text: "Due Date",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
           var data = new Date(row.DueDate);
-          if(data != null){
-          var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          if (data != null) {
+            var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
           }
           else dtdata = "";
           return dtdata;
@@ -315,7 +366,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       },
       {
         dataField: "Comment",
-        text: "Descrição",
+        text: "Description",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
@@ -327,7 +378,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       },
       {
         dataField: "V3Comments",
-        text: "Comentários",
+        text: "Comments",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
@@ -348,59 +399,174 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     const tablecolumnsRelatedMilestones = [
       {
         dataField: "Title",
-        text: "Project Milestone",
+        text: "Milestone",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
+        dataField: "Complete",
+        text: "Complete",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+      },
+      {
         dataField: "DueDate",
-        text: "Vencimento",
+        text: "Due Date",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
           var data = new Date(row.DueDate);
-          console.log("data",data);
-          if(row.DueDate != null){
+          console.log("data", data);
+          if (row.DueDate != null) {
             var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
-            }
-            else dtdata = "";
+          }
+          else dtdata = "";
           return dtdata;
         }
       },
+
+      // {
+      //   dataField: "ProjComments",
+      //   text: "Comentários",
+      //   headerStyle: { "backgroundColor": "#bee5eb" },
+      //   classes: 'headerPreStage',
+      //   headerClasses: 'text-center',
+      //   formatter: (rowContent, row) => {
+
+      //     var comentarios = row.ProjComments;
+      //     var vlrComentario = "";
+
+      //     if (comentarios != null) vlrComentario = row.ProjComments;
+
+      //     return <div dangerouslySetInnerHTML={{ __html: `${vlrComentario}` }} />;
+
+      //   }
+      // },
+
       {
-        dataField: "Complete",
-        text: "Concluído",
+        dataField: "",
+        text: "",
+        headerStyle: { "backgroundColor": "#bee5eb", "width": "80px" },
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          var id = row.ID;
+
+          return (
+
+            <button onClick={async () => { this.abrirModalRelatedMilestones(id); }} className="btn btn-info btnCustom btn-sm">Detalhes</button>
+
+          )
+
+        }
+      }
+
+    ]
+
+
+    const tablecolumnsTarefas = [
+      {
+        dataField: "Title",
+        text: "Title",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_5",
+        text: "Milestone",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_4",
+        text: "Priority",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_8",
+        text: "Qtd in Hours",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
-        formatter: (rowContent, row) => {
-          var concluido = row.Complete;
-          var resultado = "Não";
-          if (concluido == true) resultado = "Sim";
-          return resultado;
-        }
       },
       {
-        dataField: "ProjComments",
-        text: "Comentários",
+        dataField: "field_3",
+        text: "Status",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_7",
+        text: "% Complete",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_2",
+        text: "Assigned To",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+      },
+      {
+        dataField: "field_1",
+        text: "Description",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          var comentarios = row.ProjComments;
-          var vlrComentario = "";
-
-          if (comentarios != null) vlrComentario = row.ProjComments;
-
-          return <div dangerouslySetInnerHTML={{ __html: `${vlrComentario}` }} />;
+          return <div dangerouslySetInnerHTML={{ __html: `${row.field_1}` }} />;
 
         }
       },
+      {
+        dataField: "Created",
+        text: "Start Date",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.Created);
+          console.log("data", data);
+          if (row.Created != null) {
+            var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          }
+          else dtdata = "";
+          return dtdata;
+        }
+      },
+      {
+        dataField: "field_6",
+        text: "Due Date",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage text-center',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = new Date(row.field_6);
+          console.log("data", data);
+          if (row.DueDate != null) {
+            var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+          }
+          else dtdata = "";
+          return dtdata;
+        }
+      },
+
+
 
     ]
+
+
 
     return (
 
@@ -411,7 +577,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           <div className="card">
             <div className="card-header btn" id="headingProjectInformation" data-toggle="collapse" data-target="#collapseProjectInformation" aria-expanded="true" aria-controls="collapseProjectInformation">
               <h5 className="mb-0 text-info">
-                Informações da Solicitação
+                Project Information
               </h5>
             </div>
             <div id="collapseProjectInformation" className="collapse show" aria-labelledby="headingOne">
@@ -420,7 +586,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group col-md text-info ">
-                      <b>Solicitação <span id='txtID'></span></b><br></br>
+                      <b>Project ID <span id='txtID'></span></b><br></br>
                       Status: <span id='txtStatus'></span>
                     </div>
                     <div className="form-group col-md text-secondary right ">
@@ -432,7 +598,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtName">Nome</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtName">Project Name</label><span className="required"> *</span>
                       <br /><span id="txtName"></span>
                     </div>
                   </div>
@@ -441,11 +607,11 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtCategoria">Categoria</label><span className="required"> *</span>
-                      <br /><span id="txtCategoria">sdfsdffds</span>
+                      <label className="text-info" htmlFor="txtCategoria">Category</label><span className="required"> *</span>
+                      <br /><span id="txtCategoria"></span>
                     </div>
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtTipo">Tipo</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtTipo">Project type</label><span className="required"> *</span>
                       <br /><span id="txtTipo"></span>
                     </div>
                   </div>
@@ -459,7 +625,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                     </div>
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtParticipantes">Participantes</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtParticipantes">Participants</label><span className="required"> *</span>
                       <br /><span id="txtParticipantes"></span>
                     </div>
                   </div>
@@ -468,12 +634,12 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtOwner">Data Inicial</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtOwner">Start Date</label><span className="required"> *</span>
                       <br /><span id="txtDataInicial"></span>
 
                     </div>
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtParticipantes">Data Final</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtDataFinal">End Date</label><span className="required"> *</span>
                       <br /><span id="txtDataFinal"></span>
                     </div>
                   </div>
@@ -483,7 +649,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtDescricaoProduto">Descrição do Produto / Serviço</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtDescricaoProduto">Product description / Service</label><span className="required"> *</span>
                       <br /><span id="txtDescricaoProduto"></span>
                     </div>
                   </div>
@@ -492,7 +658,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtRequisitosCriticos">Requisitos críticos</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtRequisitosCriticos">Critical requirements</label><span className="required"> *</span>
                       <br /><span id="txtRequisitosCriticos"></span>
                     </div>
                   </div>
@@ -501,7 +667,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtCliente">Cliente</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtCliente">Client</label><span className="required"> *</span>
                       <br /><span id="txtCliente"></span>
                     </div>
                   </div>
@@ -510,7 +676,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
-                      <label className="text-info" htmlFor="txtOMPDocuments">Documentos OMP</label><span className="required"> *</span>
+                      <label className="text-info" htmlFor="txtOMPDocuments">OMP documents</label><span className="required"> *</span>
                       <br /><span id="txtOMPDocuments"></span>
                     </div>
                   </div>
@@ -524,7 +690,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           <div className="card">
             <div className="card-header btn" id="headingAnexo" data-toggle="collapse" data-target="#collapseAnexo" aria-expanded="true" aria-controls="collapseAnexo">
               <h5 className="mb-0 text-info">
-                Anexos
+                Attachment
               </h5>
             </div>
             <div id="collapseAnexo" className="collapse show" aria-labelledby="headingOne">
@@ -614,31 +780,110 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
             <div id="collapseRelatedMilestones" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
                 <div id='tabelaPreStageSoftware'>
-                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensPreStageSoftware" keyField='id' data={this.state.itemsListRelatedMilestones} columns={tablecolumnsRelatedMilestones} headerClasses="header-class" />
+                  <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensRelatedMilestones" keyField='id' data={this.state.itemsListRelatedMilestones} columns={tablecolumnsRelatedMilestones} headerClasses="header-class" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="card">
-            <div className="card-header btn" id="headingAcoes" data-toggle="collapse" data-target="#collapseAcoes" aria-expanded="true" aria-controls="collapseAcoes">
+            <div className="card-header btn" id="headingForum" data-toggle="collapse" data-target="#collapseForum" aria-expanded="true" aria-controls="collapseForum">
               <h5 className="mb-0 text-info">
-                Ações
+                Forum
               </h5>
             </div>
-            <div id="collapseAcoes" className="collapse show" aria-labelledby="headingOne">
+            <div id="collapseForum" className="collapse show" aria-labelledby="headingOne">
               <div className="card-body">
-                <br></br><div className="text-right">
-                  <button style={{ "margin": "2px" }} type="submit" id="btnVoltar" className="btn btn-secondary">Voltar</button>
-                  <button style={{ "margin": "2px" }} id="btnEditar" className="btn btn-secondary">Editar</button>
-                  <button style={{ "margin": "2px" }} id="btnConfirmarAdiar" className="btn btn-success">Adiar</button>
-                  <button style={{ "margin": "2px" }} id="btnConfirmarCancelar" className="btn btn-success">Cancelar</button>
-                  <button style={{ "margin": "2px" }} id="btnConfirmarConcluir" className="btn btn-success">Concluir</button>
-                  <br></br><br></br>
-                </div>
+                <div id='conteudoForum'>
 
+                  {this.state.itemsListForum.map((item, key) => {
+
+                    var id = item.idAntigo;
+
+                    var criadoPor = item.Created_x0020_By_x0020_2010;
+                    var to = item.To;
+                    var criado = new Date(item.Created2010);
+
+                    var dtcriado = ("0" + criado.getDate()).slice(-2) + '/' + ("0" + (criado.getMonth() + 1)).slice(-2) + '/' + criado.getFullYear() + ' ' + ("0" + (criado.getHours())).slice(-2) + ':' + ("0" + (criado.getMinutes())).slice(-2);
+                    var respostas = item.Respostas;
+                    var assunto = item.Subject;
+
+                    console.log("assunto", assunto);
+
+                    var corpo = item.Body;
+
+                    if (respostas != "0") {
+
+                      return (
+
+                        <div className="p-0 mb-0 bg-light text-dark rounded comment ${area2}">
+
+                          <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
+
+                            <b>Comentário postado por:</b> {criadoPor} em {dtcriado}<br></br>
+                            <b>Para:</b> {to}<br></br>
+                            <b>Respostas:</b> {respostas}
+
+                          </div>
+                          <br />
+                          <div className="p-3">
+
+                            <h4>{assunto}</h4>
+
+                            <div dangerouslySetInnerHTML={{ __html: `${corpo}` }} />
+
+                            <br /><br />
+                            <button id='btnRespostas' onClick={async () => { this.abrirModalRespostas(id); }} type="button" className="btn btn-info">Respostas</button>
+                            <br /><br />
+
+                          </div>
+
+                        </div>
+
+                      );
+
+                    } else {
+
+                      return (
+
+                        <div className="p-0 mb-0 bg-light text-dark rounded comment ${area2}">
+
+                          <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
+
+                            <b>Comentário postado por:</b> {criadoPor} em {dtcriado}<br></br>
+                            <b>Para:</b> {to}<br></br>
+                            <b>Respostas:</b> {respostas}
+
+                          </div>
+                          <br />
+                          <div className="p-3">
+
+                            <h4>{assunto}</h4>
+
+                            <div dangerouslySetInnerHTML={{ __html: `${corpo}` }} />
+
+                          </div>
+
+                        </div>
+
+                      );
+
+                    }
+
+
+
+                  })}
+
+
+
+                </div>
               </div>
             </div>
+          </div>
+
+          <br></br><div className="text-right">
+            <button style={{ "margin": "2px" }} type="submit" id="btnVoltar" className="btn btn-secondary">Voltar</button>
+            <br></br><br></br>
           </div>
 
         </div>
@@ -743,6 +988,124 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
             </div>
           </div>
         </div>
+
+        <div className="modal fade" id="modalDetalhesMilestones" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modalLargura900" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Related Milestones</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                <div className="form-row">
+                  <div className="form-group col-md border m-1">
+                    <label className="text-info" htmlFor="txtProjectMilestone">Project Milestone</label><br></br>
+                    <span className='labelDetalhes' id='txtProjectMilestone'></span>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md border m-1">
+                    <label className="text-info" htmlFor="txtProject">Project</label><br></br>
+                    <span className='labelDetalhes' id='txtProject'></span>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md border m-1">
+                    <label className="text-info" htmlFor="txtDueDate">Due Date</label><br></br>
+                    <span className='labelDetalhes' id='txtDueDate'></span>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md border m-1">
+                    <label className="text-info" htmlFor="txtComplete">Complete</label><br></br>
+                    <span className='labelDetalhes' id='txtComplete'></span>
+                  </div>
+                </div>
+
+                <div className="form-row">
+                  <div className="form-group col-md border m-1">
+                    <label className="text-info" htmlFor="txtComments">Comments</label><br></br>
+                    <span className='labelDetalhes' id='txtComments'></span>
+                  </div>
+                </div>
+
+                <br></br>
+
+                <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItensTarefas" keyField='id' data={this.state.itemsListTarefas} columns={tablecolumnsTarefas} headerClasses="header-class" />
+
+              </div>
+              <div className="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="modal fade" id="modalRespostas" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div className="modal-dialog modalLargura700" role="document">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title" id="exampleModalLabel">Respostas</h5>
+                <button type="button" className="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div className="modal-body">
+
+                {this.state.itemsListForumRespostas.map((item, key) => {
+
+                  var criadoPor = item.Created_x0020_By_x0020_2010;
+                  var to = item.To;
+                  //  console.log("item.Created2010",item.Created2010);
+                  // var criado = new Date(item.Created2010);
+                  // console.log("criado",criado);
+                  // var dtcriado = ("0" + criado.getDate()).slice(-2) + '/' + ("0" + (criado.getMonth() + 1)).slice(-2) + '/' + criado.getFullYear() + ' ' + ("0" + (criado.getHours())).slice(-2) + ':' + ("0" + (criado.getMinutes())).slice(-2);
+                  var respostas = item.Respostas;
+                  var assunto = item.Subject;
+
+                  var corpo = item.Body;
+
+                  return (
+
+                    <div className="p-0 mb-0 bg-light text-dark rounded comment ${area2}">
+
+                      <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
+
+                        <b>Comentário postado por:</b> {criadoPor} em {item.Created2010}<br></br>
+
+                        
+
+                      </div>
+                      <br />
+                      <div className="p-3">
+
+                        <h4>{assunto}</h4>
+
+                        <div dangerouslySetInnerHTML={{ __html: `${corpo}` }} />
+
+                      </div>
+
+                    </div>
+
+                  );
+
+                })}
+
+              </div>
+              <div className="modal-footer">
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+
 
       </>
 
@@ -884,6 +1247,9 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
     var reactHandlerRelatedMilestones = this;
 
+    console.log("_projectTitle", _projectTitle);
+    console.log("_siteNovo", _siteNovo);
+
     if (_siteNovo) {
 
       var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments&$filter=Project/ID eq ` + _projectID;
@@ -915,7 +1281,33 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     });
 
 
+    var reactForum = this;
 
+    console.log("_projectTitle", _projectTitle);
+
+    jquery.ajax({
+      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('Forum BKP')/items?$filter=Project_x0020_Name eq '${_projectTitle}' `,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData Forum", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactForum.setState({
+            itemsListForum: resultData.d.results
+          });
+        }else{
+          jQuery("#conteudoForum").hide();
+        }
+
+
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
 
 
   }
@@ -924,7 +1316,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
   protected getProject() {
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,SiteNovoSO,Owner_x0020_2,Participants_x0020_2,StartDate,EndDate&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,SiteNovoSO,Owner_x0020_2,Participants_x0020_2,StartDate,EndDate,Status_x0020_Projeto&$expand=AssignedTo,Participants,Client&$filter=ID eq ` + _projectID,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       async: false,
@@ -941,7 +1333,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
             _projectTitle = title;
 
-            var status = resultData.d.results[i].ProjStatus;
+            var status = resultData.d.results[i].Status_x0020_Projeto;
             var nome = resultData.d.results[i].Title;
             var category = resultData.d.results[i].ProjCategory;
             var tipo = resultData.d.results[i].Project_x0020_type;
@@ -1003,22 +1395,24 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
               }
 
 
-              if (resultData.d.results[i].Participants.hasOwnProperty('results')) {
 
-                for (let x = 0; x < resultData.d.results[i].Participants.results.length; x++) {
-
-                  arrParticipants.push(resultData.d.results[i].Participants.results[x].Title);
-
-                }
-
-              }
 
             }
 
             else {
 
               arrOwner.push(resultData.d.results[i].Owner_x0020_2);
-              arrParticipants.push(resultData.d.results[i].Participants_x0020_2);
+              // arrParticipants.push(resultData.d.results[i].Participants);
+
+            }
+
+            if (resultData.d.results[i].Participants.hasOwnProperty('results')) {
+
+              for (let x = 0; x < resultData.d.results[i].Participants.results.length; x++) {
+
+                arrParticipants.push(resultData.d.results[i].Participants.results[x].Title);
+
+              }
 
             }
 
@@ -1043,35 +1437,35 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
             console.log("status", status);
 
-            if ((status != "Concluída") && (status != "Cancelada")) {
+            // if ((status != "Concluída") && (status != "Cancelada")) {
 
-              if (_grupos.indexOf("SST - Elaboradores") !== -1) {
+            //   if (_grupos.indexOf("SST - Elaboradores") !== -1) {
 
-                setTimeout(() => {
+            //     setTimeout(() => {
 
-                  jQuery("#btnEditar").show();
+            //       jQuery("#btnEditar").show();
 
-                }, 1000);
+            //     }, 1000);
 
-              }
+            //   }
 
-            }
+            // }
 
-            if (status == "Em Andamento") {
+            // if (status == "Em Andamento") {
 
-              if (arrOwner.indexOf(_correntUser) !== -1) {
+            //   if (arrOwner.indexOf(_correntUser) !== -1) {
 
-                setTimeout(() => {
+            //     setTimeout(() => {
 
-                  jQuery("#btnConfirmarAdiar").show();
-                  jQuery("#btnConfirmarCancelar").show();
-                  jQuery("#btnConfirmarConcluir").show();
+            //       jQuery("#btnConfirmarAdiar").show();
+            //       jQuery("#btnConfirmarCancelar").show();
+            //       jQuery("#btnConfirmarConcluir").show();
 
-                }, 1000);
+            //     }, 1000);
 
-              }
+            //   }
 
-            }
+            // }
 
 
 
@@ -1099,14 +1493,14 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     }
 
     var soapPack = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-      <soap:Body>
-      <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
-      <strlistID>${idLista}</strlistID>
-      <strlistItemID>${_projectID}</strlistItemID>
-      <strFieldName>Product_x0020_description_x0020_</strFieldName>
-      </GetVersionCollection>
-      </soap:Body>
-      </soap:Envelope>`;
+                    <soap:Body>
+                      <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+                        <strlistID>${idLista}</strlistID>
+                        <strlistItemID>${_projectID}</strlistItemID>
+                        <strFieldName>Product_x0020_description_x0020_</strFieldName>
+                      </GetVersionCollection>
+                    </soap:Body>
+                  </soap:Envelope>`;
 
     $.ajax({
       type: "POST",
@@ -1137,7 +1531,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
 
 
-          strDescricaoProduto += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Product_x0020_description_x0020_");
+          strDescricaoProduto += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br />" + $(this).attr("Product_x0020_description_x0020_");
           //  strDescricaoProduto = strDescricaoProduto.replace("undefined", "");
           //   strDescricaoProduto = strDescricaoProduto.replace(",(", " (");
           //  strDescricaoProduto = strDescricaoProduto.replace(",,", ",");
@@ -1154,14 +1548,14 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
 
     var soapPack2 = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
-    <soap:Body>
-    <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
-    <strlistID>${idLista}</strlistID>
-    <strlistItemID>${_projectID}</strlistItemID>
-    <strFieldName>Critical_x0020_requirements</strFieldName>
-    </GetVersionCollection>
-    </soap:Body>
-    </soap:Envelope>`;
+                    <soap:Body>
+                      <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+                        <strlistID>${idLista}</strlistID>
+                        <strlistItemID>${_projectID}</strlistItemID>
+                        <strFieldName>Critical_x0020_requirements</strFieldName>
+                      </GetVersionCollection>
+                    </soap:Body>
+                  </soap:Envelope>`;
 
     $.ajax({
       type: "POST",
@@ -1192,7 +1586,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
 
 
-          strRequisitosCriticos += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br/>" + $(this).attr("Critical_x0020_requirements");
+          strRequisitosCriticos += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br />" + $(this).attr("Critical_x0020_requirements");
           //strRequisitosCriticos = strRequisitosCriticos.replace("undefined", "");
           //strRequisitosCriticos = strRequisitosCriticos.replace(",(", " (");
           //strRequisitosCriticos = strRequisitosCriticos.replace(",,", ",");
@@ -1347,6 +1741,176 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     jQuery("#modalSucessoConcluir").modal('hide');
 
     window.location.href = `Solicitacao-Todos.aspx`;
+
+  }
+
+  protected abrirModalRelatedMilestones(id) {
+
+
+    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Milestones')/items?$top=50&$orderby= Created asc&$select=ID,Title,Complete,DueDate,ProjComments,Project_x0020_TXT&$filter=ID eq ` + id;
+
+    jQuery.ajax({
+      url: url,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData milestone", resultData);
+
+        if (resultData.d.results.length > 0) {
+
+          for (var i = 0; i < resultData.d.results.length; i++) {
+
+            var projectMilestone = resultData.d.results[i].Title;
+            _projectMilestone = projectMilestone
+            var project = resultData.d.results[i].Project_x0020_TXT;
+            var dueDate = resultData.d.results[i].DueDate;
+            var complete = resultData.d.results[i].Complete;
+            var comments = resultData.d.results[i].ProjComments;
+
+
+            if (dueDate != null) {
+              var data = new Date(dueDate);
+              var resData = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+            }
+            else resData = "";
+
+            var resComplete = "No";
+
+            if (complete != null) {
+              if (complete != false) {
+                resComplete = complete;
+              }
+              else {
+                resComplete = "No";
+              }
+            }
+
+
+            jQuery("#txtProjectMilestone").html(projectMilestone);
+            jQuery("#txtProject").html(project);
+            jQuery("#txtDueDate").html(resData);
+            jQuery("#txtComplete").html(resComplete);
+            jQuery("#txtComments").html(comments);
+
+
+          }
+
+
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    var reactHandlerTarefas = this;
+
+    console.log("_projectTitle", _projectTitle);
+    console.log("_siteNovo", _siteNovo);
+
+    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('tarefas')/items?$top=50&$orderby= Created asc&$select=ID,Title,field_4,field_6,field_3,field_5,field_2,field_8,field_7,field_1,Created&$filter=field_5 eq '${_projectMilestone}' `;
+
+    jQuery.ajax({
+      url: url,
+      type: "GET",
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: function (resultData) {
+
+        console.log("resultData tarefas", resultData);
+
+        if (resultData.d.results.length > 0) {
+          jQuery("#tabelaPreStageSoftware").show();
+          reactHandlerTarefas.setState({
+            itemsListTarefas: resultData.d.results
+          });
+        }
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+
+    jQuery("#modalDetalhesMilestones").modal({ backdrop: 'static', keyboard: false });
+
+
+
+
+  }
+
+
+  protected async abrirModalRespostas(id) {
+
+    console.log("id", id);
+
+    var reactHandlerTarefas = this;
+
+    console.log("_projectTitle", _projectTitle);
+    console.log("_siteNovo", _siteNovo);
+
+    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Lista Base Forum 2')/items?$top=1&$orderby= Created asc&$select=ID,field_1&$filter=Title eq '${id}' `;
+
+    jQuery.ajax({
+      url: url,
+      type: "GET",
+      async: false,
+      headers: { 'Accept': 'application/json; odata=verbose;' },
+      success: async (resultData) => {
+
+        if (resultData.d.results.length > 0) {
+
+          for (var i = 0; i < resultData.d.results.length; i++) {
+
+            var title = resultData.d.results[i].field_1;
+
+            var listUri = "/sites/sst-hml/Lists/Forum BKP";
+
+            _web.getList(listUri)
+              .renderListDataAsStream({
+                // ViewXml: '',
+                FolderServerRelativeUrl: `${listUri}/${title}`
+              })
+              .then(r => {
+
+                console.log("r1", r);
+
+                var reactHandlerForumRespostas = this;
+
+
+                setTimeout(() => {
+
+                  reactHandlerForumRespostas.setState({
+                    itemsListForumRespostas: r.Row
+                  });
+
+                }, 0);
+
+
+              }).catch((error: any) => {
+                console.log("Erro: ", error);
+              });
+
+
+
+          }
+
+        }
+
+
+
+      },
+      error: function (jqXHR, textStatus, errorThrown) {
+        console.log(jqXHR.responseText);
+      }
+    });
+
+
+    jQuery("#modalRespostas").modal({ backdrop: 'static', keyboard: false });
+
+
 
   }
 
