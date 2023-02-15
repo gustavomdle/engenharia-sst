@@ -57,6 +57,7 @@ var _correntUser;
 var _projectTitle;
 var _siteNovo;
 var _projectMilestone;
+var _linhaAnexos = "";
 
 export interface IReactGetItemsState {
 
@@ -476,67 +477,67 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_5",
+        dataField: "Milestone",
         text: "Milestone",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_4",
+        dataField: "Priority",
         text: "Priority",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_8",
+        dataField: "CostDays",
         text: "Qtd in Hours",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_3",
+        dataField: "Status",
         text: "Status",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_7",
+        dataField: "PercentComplete",
         text: "% Complete",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_2",
+        dataField: "AtribuidoA",
         text: "Assigned To",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
       },
       {
-        dataField: "field_1",
+        dataField: "Body",
         text: "Description",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          return <div dangerouslySetInnerHTML={{ __html: `${row.field_1}` }} />;
+          return <div dangerouslySetInnerHTML={{ __html: `${row.Body}` }} />;
 
         }
       },
       {
-        dataField: "Created",
+        dataField: "StartDate",
         text: "Start Date",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
-          var data = new Date(row.Created);
+          var data = new Date(row.StartDate);
           console.log("data", data);
           if (row.Created != null) {
             var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
@@ -546,19 +547,72 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         }
       },
       {
-        dataField: "field_6",
+        dataField: "DueDate",
         text: "Due Date",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
-          var data = new Date(row.field_6);
+          var data = new Date(row.DueDate);
           console.log("data", data);
           if (row.DueDate != null) {
             var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
           }
           else dtdata = "";
           return dtdata;
+        }
+      },
+      {
+        dataField: "",
+        text: "Anexos",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          var id = row.ID;
+
+          var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Project Tasks')/items('${id}')/AttachmentFiles`;
+
+          // console.log("url", url);
+
+          $.ajax
+            ({
+              url: url,
+              method: "GET",
+              async: false,
+              headers:
+              {
+                // Accept header: Specifies the format for response data from the server.
+                "Accept": "application/json;odata=verbose"
+              },
+              success: async (resultData) => {
+
+                console.log("resultData anexos tasks", resultData);
+
+
+                if (resultData.d.results.length > 0) {
+
+                  for (var i = 0; i < resultData.d.results.length; i++) {
+
+                    var caminho = encodeURI(resultData.d.results[i].ServerRelativeUrl);
+
+                    console.log("caminho arquivo", caminho);
+
+                    _linhaAnexos += `<a target='_blank' data-interception="off" href=${caminho} >${resultData.d.results[i].FileName}</a><br></br>`;
+
+                  }
+
+                }
+
+              },
+              error: function (xhr, status, error) {
+                console.log("Falha anexo");
+              }
+            })
+
+          return <div dangerouslySetInnerHTML={{ __html: `${_linhaAnexos}` }} />;
+
         }
       },
 
@@ -990,7 +1044,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         </div>
 
         <div className="modal fade" id="modalDetalhesMilestones" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog modalLargura900" role="document">
+          <div className="modal-dialog modalLargura1100" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">Related Milestones</h5>
@@ -1079,7 +1133,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                         <b>Comentário postado por:</b> {criadoPor} em {item.Created2010}<br></br>
 
-                        
+
 
                       </div>
                       <br />
@@ -1298,7 +1352,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           reactForum.setState({
             itemsListForum: resultData.d.results
           });
-        }else{
+        } else {
           jQuery("#conteudoForum").hide();
         }
 
@@ -1753,6 +1807,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       url: url,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
+      async: false,
       success: function (resultData) {
 
         console.log("resultData milestone", resultData);
@@ -1810,12 +1865,14 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     console.log("_projectTitle", _projectTitle);
     console.log("_siteNovo", _siteNovo);
 
-    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('tarefas')/items?$top=50&$orderby= Created asc&$select=ID,Title,field_4,field_6,field_3,field_5,field_2,field_8,field_7,field_1,Created&$filter=field_5 eq '${_projectMilestone}' `;
+    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Tasks')/items?$top=50&$orderby= Created asc&$select=ID,Title,Priority,DueDate,Status,Milestone,AtribuidoA,CostDays,PercentComplete,Body,Created,StartDate&$filter=Milestone eq '${_projectMilestone}' `;
+    // var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Project Tasks')/items?$top=50&$orderby= Created asc&$select=ID,Title&$filter=Milestone eq '${_projectMilestone}' `;
 
     jQuery.ajax({
       url: url,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
+      async: false,
       success: function (resultData) {
 
         console.log("resultData tarefas", resultData);
@@ -1833,8 +1890,9 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     });
 
 
-
-    jQuery("#modalDetalhesMilestones").modal({ backdrop: 'static', keyboard: false });
+    setTimeout(async () => {
+      jQuery("#modalDetalhesMilestones").modal({ backdrop: 'static', keyboard: false });
+    }, 1000);
 
 
 
@@ -1851,7 +1909,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     console.log("_projectTitle", _projectTitle);
     console.log("_siteNovo", _siteNovo);
 
-    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Lista Base Forum 2')/items?$top=1&$orderby= Created asc&$select=ID,field_1&$filter=Title eq '${id}' `;
+    var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Lista Base Forum 2')/items?$top=1&$orderby= Created asc&$select=ID,Body&$filter=Title eq '${id}' `;
 
     jQuery.ajax({
       url: url,
@@ -1864,7 +1922,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
           for (var i = 0; i < resultData.d.results.length; i++) {
 
-            var title = resultData.d.results[i].field_1;
+            var title = resultData.d.results[i].Body;
 
             var listUri = "/sites/sst-hml/Lists/Forum BKP";
 
