@@ -47,6 +47,16 @@ const selectOptions = {
   'Suspended': 'Suspended',
 };
 
+const selectOptions2 = {
+  'Fix problems': 'Fix problems',
+  'Homologation': 'Homologation',
+  'New Product': 'New Product',
+  'Others': 'Others',
+  'Support technician': 'Support technician',
+  'Technical support': 'Technical support',
+  'Technological development': 'Technological development'
+};
+
 const empTablecolumns = [
   {
     dataField: "ID",
@@ -68,12 +78,15 @@ const empTablecolumns = [
     text: "Categoria",
     headerStyle: { backgroundColor: '#bee5eb' },
     sort: true,
-    filter: customFilter
+    filter: selectFilter({
+      options: selectOptions2,
+      placeholder: 'Selecione',
+    }),
   },
   {
     dataField: "Product_x0020_description_x0020_",
     text: "Product description / Service",
-    headerStyle: { backgroundColor: '#bee5eb' },
+    headerStyle: { backgroundColor: '#bee5eb', "width": "150px" },
     sort: true,
     filter: customFilter,
     formatter: (rowContent, row) => {
@@ -116,38 +129,58 @@ const empTablecolumns = [
     sort: true,
     filter: customFilter
   },
+  // {
+  //   dataField: "",
+  //   text: "",
+  //   headerStyle: { "backgroundColor": "#bee5eb", "width": "130px" },
+  //   formatter: (rowContent, row) => {
+  //     var id = row.ID;
+  //     var status = row.ProjStatus;
+  //     var urlDetalhes = `Solicitacao-Detalhes.aspx?ProjectID=` + id;
+  //     var urlEditar = `Solicitacao-Editar.aspx?ProjectID=` + id;
+
+  //     if ((status == "Não Iniciada") || (status == "Em Andamento") || (status == "Adiada")) {
+
+  //       if (_grupos.indexOf("SST - Elaboradores") !== -1) {
+
+  //         return (
+  //           <>
+  //             <a href={urlDetalhes}><button className="btn btn-info btnCustom btn-sm">Exibir</button></a>&nbsp;
+  //             <a href={urlEditar}><button className="btn btn-danger btnCustom btn-sm">Editar</button></a>
+  //           </>
+  //         )
+
+  //       } else {
+
+  //         return (
+  //           <>
+  //             <a href={urlDetalhes}><button className="btn btn-info btnCustom btn-sm">Exibir</button></a>&nbsp;
+  //           </>
+  //         )
+
+  //       }
+
+  //     } else {
+
+  //       return (
+  //         <>
+  //           <a href={urlDetalhes}><button className="btn btn-info btnCustom btn-sm">Exibir</button></a>&nbsp;
+  //         </>
+  //       )
+
+  //     }
+
+  //   }
+  // },
   {
     dataField: "",
     text: "",
-    headerStyle: { "backgroundColor": "#bee5eb", "width": "130px" },
+    headerStyle: { "backgroundColor": "#bee5eb", "width": "70px" },
     formatter: (rowContent, row) => {
       var id = row.ID;
       var status = row.ProjStatus;
       var urlDetalhes = `Solicitacao-Detalhes.aspx?ProjectID=` + id;
       var urlEditar = `Solicitacao-Editar.aspx?ProjectID=` + id;
-
-      if ((status == "Não Iniciada") || (status == "Em Andamento") || (status == "Adiada")) {
-
-        if (_grupos.indexOf("SST - Elaboradores") !== -1) {
-
-          return (
-            <>
-              <a href={urlDetalhes}><button className="btn btn-info btnCustom btn-sm">Exibir</button></a>&nbsp;
-              <a href={urlEditar}><button className="btn btn-danger btnCustom btn-sm">Editar</button></a>
-            </>
-          )
-
-        } else {
-
-          return (
-            <>
-              <a href={urlDetalhes}><button className="btn btn-info btnCustom btn-sm">Exibir</button></a>&nbsp;
-            </>
-          )
-
-        }
-
-      } else {
 
         return (
           <>
@@ -155,7 +188,6 @@ const empTablecolumns = [
           </>
         )
 
-      }
 
     }
   }
@@ -165,7 +197,7 @@ const empTablecolumns = [
 
 
 const paginationOptions = {
-  sizePerPage: 20,
+  sizePerPage: 100,
   hideSizePerPage: true,
   hidePageListOnlyOnePage: true
 };
@@ -249,8 +281,8 @@ export default class SstListarProjectsTodos extends React.Component<ISstListarPr
     return (
 
       <><p>Resultado: <span className="text-info" id="txtCount"></span> registro(s) encontrado(s)</p>
-        <div className={styles.container}>
-          <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItens" id="gridTodosItens" keyField='id' data={this.state.itemsList} columns={empTablecolumns} headerClasses="header-class" pagination={paginationFactory(paginationOptions)} filter={filterFactory()} />
+        <div className="tabelaComScrool">
+          <BootstrapTable bootstrap4 striped responsive condensed hover={false} className="gridTodosItensx" id="gridTodosItens" keyField='id' data={this.state.itemsList} columns={empTablecolumns} headerClasses="header-class" pagination={paginationFactory(paginationOptions)} filter={filterFactory()} />
         </div></>
 
 

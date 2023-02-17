@@ -10,6 +10,12 @@
     max-width: 700px !important;
 }
 
+.tabelaComScrool{
+    width: 950px;
+    overflow-x: auto;
+
+}
+
 .modalLargura1100 {
     max-width: 1100px !important;
 }

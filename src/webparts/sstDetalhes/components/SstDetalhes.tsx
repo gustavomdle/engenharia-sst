@@ -58,6 +58,9 @@ var _projectTitle;
 var _siteNovo;
 var _projectMilestone;
 var _linhaAnexos = "";
+var _strRequisitosCriticos = "";
+var _strV3Comments = "";
+var _strComment = "";
 
 export interface IReactGetItemsState {
 
@@ -357,40 +360,153 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
+
           var data = new Date(row.DueDate);
+          console.log("data issues",data)
           if (data != null) {
             var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
+            if (dtdata == "31/12/1969") dtdata = "";
           }
           else dtdata = "";
           return dtdata;
         }
       },
       {
-        dataField: "Comment",
+        dataField: "",
         text: "Description",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          return <div dangerouslySetInnerHTML={{ __html: `${row.Comment}` }} />;
+          var description = row.Comment;
+          return <div dangerouslySetInnerHTML={{ __html: `${description}` }} />;
 
         }
       },
       {
-        dataField: "V3Comments",
+        dataField: "",
         text: "Comments",
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage',
         headerClasses: 'text-center',
         formatter: (rowContent, row) => {
 
-          var comentarios = row.V3Comments;
-          var vlrComentario = "";
+          var idLista = this.props.idListaIssues;
+          var id = row.ID;
 
-          if (comentarios != null) vlrComentario = row.V3Comments;
+         // console.log("_projectID issues", _projectID);
 
-          return <div dangerouslySetInnerHTML={{ __html: `${vlrComentario}` }} />;
+          var soapPack = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
+          <soap:Body>
+            <GetVersionCollection xmlns="http://schemas.microsoft.com/sharepoint/soap/">
+              <strlistID>${idLista}</strlistID>
+              <strlistItemID>${id}</strlistItemID>
+              <strFieldName>V3Comments</strFieldName>
+            </GetVersionCollection>
+          </soap:Body>
+        </soap:Envelope>`;
+
+
+        console.log("soapPack issues", soapPack);
+
+          $.ajax({
+            type: "POST",
+            url: this.props.siteurl + '/_vti_bin/lists.asmx',
+            data: soapPack,
+            dataType: "xml",
+            async: false,
+            contentType: "text/xml; charset=\"utf-8\"",
+            success: function (xData1, status) {
+
+              console.log("xData 1", xData1)
+
+              $(xData1).find("Versions").find("Version").each(function () {
+
+                var textoEditor2 = $(this).attr("Editor");
+
+                console.log("textoEditor", textoEditor2);
+
+                var editor1 = textoEditor2.substring(textoEditor2.indexOf("#") + 1);
+                var editor2 = editor1.split('#')[0];
+
+                var dtModified = new Date($(this).attr("Modified"));
+                //  dtModified = moment(dtModified).format('DD/MM/YYYY HH:mm');
+
+                var dtModified = new Date($(this).attr("Modified"));
+                var formDtdata = ("0" + dtModified.getDate()).slice(-2) + '/' + ("0" + (dtModified.getMonth() + 1)).slice(-2) + '/' + dtModified.getFullYear() + ' ' + ("0" + (dtModified.getHours())).slice(-2) + ':' + ("0" + (dtModified.getMinutes())).slice(-2);
+
+
+                _strV3Comments += "<span style='color:#004b87'>" + editor2 + "(" + formDtdata + ")</span><br />" + $(this).attr("V3Comments");
+                //strRequisitosCriticos = strRequisitosCriticos.replace("undefined", "");
+                //strRequisitosCriticos = strRequisitosCriticos.replace(",(", " (");
+                //strRequisitosCriticos = strRequisitosCriticos.replace(",,", ",");
+
+              });
+
+              //console.log("strProdutoDescricao",strProdutoDescricao);
+              //jQuery("#txtRequisitosCriticos").html(strRequisitosCriticos);
+            },
+            error: function (e) {
+              console.log("e", e);
+            }
+          });
+
+
+          return <div dangerouslySetInnerHTML={{ __html: `${_strV3Comments}` }} />;
+
+        }
+      },
+      {
+        dataField: "",
+        text: "Anexos",
+        headerStyle: { "backgroundColor": "#bee5eb" },
+        classes: 'headerPreStage',
+        headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+
+          var id = row.ID;
+
+          var url = `${this.props.siteurl}/_api/web/lists/getByTitle('Project Issues')/items('${id}')/AttachmentFiles`;
+
+          //console.log("url anexo", url);
+
+          $.ajax
+            ({
+              url: url,
+              method: "GET",
+              async: false,
+              headers:
+              {
+                // Accept header: Specifies the format for response data from the server.
+                "Accept": "application/json;odata=verbose"
+              },
+              success: async (resultData) => {
+
+                // console.log("resultData anexos RelatedIssues", resultData);
+
+
+                if (resultData.d.results.length > 0) {
+
+                  for (var i = 0; i < resultData.d.results.length; i++) {
+
+                    var caminho = encodeURI(resultData.d.results[i].ServerRelativeUrl);
+
+                    //   console.log("caminho arquivo", caminho);
+
+                    _linhaAnexos += `<a target='_blank' data-interception="off" href=${caminho} >${resultData.d.results[i].FileName}</a><br></br>`;
+
+                  }
+
+                }
+
+              },
+              error: function (xhr, status, error) {
+                console.log("Falha anexo");
+              }
+            })
+
+          return <div dangerouslySetInnerHTML={{ __html: `${_linhaAnexos}` }} />;
 
         }
       },
@@ -1102,7 +1218,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
 
         <div className="modal fade" id="modalRespostas" tabIndex={-1} role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-          <div className="modal-dialog modalLargura700" role="document">
+          <div className="modal-dialog modalLargura1100" role="document">
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title" id="exampleModalLabel">Respostas</h5>
@@ -1911,6 +2027,8 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
     var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Lista Base Forum 2')/items?$top=1&$orderby= Created asc&$select=ID,Body&$filter=Title eq '${id}' `;
 
+    console.log("url abrirModalRespostas",url);
+
     jQuery.ajax({
       url: url,
       type: "GET",
@@ -1918,15 +2036,19 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: async (resultData) => {
 
+        console.log("resultData.d.results.length abrirModalRespostas",resultData);
+
         if (resultData.d.results.length > 0) {
 
           for (var i = 0; i < resultData.d.results.length; i++) {
 
             var title = resultData.d.results[i].Body;
 
-            var listUri = "/sites/sst-hml/Lists/Forum BKP";
+            var listUri = `${this.props.context.pageContext.web.serverRelativeUrl}/Lists/Forum BKP`;
 
-            _web.getList(listUri)
+            console.log("listUri",listUri);
+
+            await _web.getList(listUri)
               .renderListDataAsStream({
                 // ViewXml: '',
                 FolderServerRelativeUrl: `${listUri}/${title}`
@@ -1948,7 +2070,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
 
               }).catch((error: any) => {
-                console.log("Erro: ", error);
+                console.log("Erro respostas: ", error);
               });
 
 
