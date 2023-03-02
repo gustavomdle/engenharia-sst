@@ -47,6 +47,14 @@ const selectOptions = {
 
 const empTablecolumns = [
   {
+    dataField: "ID_x0020_2",
+    text: "Número",
+    headerStyle: { backgroundColor: '#bee5eb' },
+    sort: true,
+    classes: 'text-center',
+    filter: customFilter,
+  },
+  {
     dataField: "Title",
     text: "Nome",
     headerStyle: { backgroundColor: '#bee5eb' },
@@ -147,7 +155,7 @@ const empTablecolumns = [
 
 
 const paginationOptions = {
-  sizePerPage: 20,
+  sizePerPage: 100,
   hideSizePerPage: true,
   hidePageListOnlyOnePage: true
 };
@@ -208,11 +216,12 @@ export default class SstListarProjectsPorStatus extends React.Component<ISstList
 
     var statusSolicitacao = this.props.statusSolicitacao;
 
-    if (statusSolicitacao == "Não iniciada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Não iniciada'`;
-    else if(statusSolicitacao == "Em andamento") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Em andamento'`;
-    else if (statusSolicitacao == "Concluída") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Concluída'`;
-    else if (statusSolicitacao == "Cancelada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Cancelada'`;
-    else if (statusSolicitacao == "Adiada") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title&$expand=AssignedTo,Author,Participants,Client&$filter=ProjStatus eq 'Adiada'`;
+    if (statusSolicitacao == "Cancelled") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Cancelled'`;
+    else if(statusSolicitacao == "Concluded") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Concluded'`;
+    else if (statusSolicitacao == "Not Started") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Not Started'`;
+    else if (statusSolicitacao == "Open") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Open'`;
+    else if (statusSolicitacao == "Refused") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Refused'`;
+    else if (statusSolicitacao == "Suspended") var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client&$filter=Status_x0020_Projeto eq 'Suspended'`;
 
     jQuery.ajax({
       url: url,

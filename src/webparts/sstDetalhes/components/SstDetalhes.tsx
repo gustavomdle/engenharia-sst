@@ -78,25 +78,24 @@ export interface IReactGetItemsState {
   itemsListForum: [
     {
       "ID": any,
-      "idAntigo": any,
-      "Project_x0020_Name": any,
-      "Subject": any,
-      "Created2010": any,
-      "Created_x0020_By_x0020_2010": any,
+      "Project": { "Title": any },
+      "Title": any,
+      "Created": any,
       "Body": any,
-      "Respostas": any,
-      "To": any
+      "Author": { "Title": any },
+      "To": any,
+      "Folder": { "ItemCount": any },
     }
   ],
   itemsListForumRespostas: [
     {
-      "Project_x0020_Name": any,
-      "Subject": any,
-      "Created2010": any,
-      "Created_x0020_By_x0020_2010": any,
+      "ID": any,
+      "Project": { "Title": any },
+      "Title": any,
+      "Created": any,
       "Body": any,
-      "Respostas": any,
-      "To": any
+      "Author": any,
+      "To": { "Title": any },
     }
   ],
   itemsListAnexos: [
@@ -146,25 +145,24 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       itemsListForum: [
         {
           "ID": "",
-          "idAntigo": "",
-          "Project_x0020_Name": "",
-          "Subject": "",
-          "Created2010": "",
-          "Created_x0020_By_x0020_2010": "",
+          "Project": { "Title": "" },
+          "Title": "",
+          "Created": "",
           "Body": "",
-          "Respostas": "",
-          "To": ""
+          "Author": { "Title": "" },
+          "To": "",
+          "Folder": { "ItemCount": "" },
         }
       ],
       itemsListForumRespostas: [
         {
-          "Project_x0020_Name": "",
-          "Subject": "",
-          "Created2010": "",
-          "Created_x0020_By_x0020_2010": "",
+          "ID": "",
+          "Project": { "Title": "" },
+          "Title": "",
+          "Created": "",
           "Body": "",
-          "Respostas": "",
-          "To": ""
+          "Author": "",
+          "To": { "Title": "" },
         }
       ],
       itemsListAnexos: [
@@ -362,7 +360,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         formatter: (rowContent, row) => {
 
           var data = new Date(row.DueDate);
-          console.log("data issues",data)
+          console.log("data issues", data)
           if (data != null) {
             var dtdata = ("0" + data.getDate()).slice(-2) + '/' + ("0" + (data.getMonth() + 1)).slice(-2) + '/' + data.getFullYear();
             if (dtdata == "31/12/1969") dtdata = "";
@@ -395,7 +393,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
           var idLista = this.props.idListaIssues;
           var id = row.ID;
 
-         // console.log("_projectID issues", _projectID);
+          // console.log("_projectID issues", _projectID);
 
           var soapPack = `<soap:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/">
           <soap:Body>
@@ -408,7 +406,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         </soap:Envelope>`;
 
 
-        console.log("soapPack issues", soapPack);
+          console.log("soapPack issues", soapPack);
 
           $.ajax({
             type: "POST",
@@ -527,6 +525,12 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
         headerStyle: { "backgroundColor": "#bee5eb" },
         classes: 'headerPreStage text-center',
         headerClasses: 'text-center',
+        formatter: (rowContent, row) => {
+          var data = row.Complete;
+          var valor = "No";
+          if (data == false) valor = "Yes";
+          return valor;
+        }
       },
       {
         dataField: "DueDate",
@@ -755,18 +759,6 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                 <div className="form-group">
                   <div className="form-row">
-                    <div className="form-group col-md text-info ">
-                      <b>Project ID <span id='txtID'></span></b><br></br>
-                      Status: <span id='txtStatus'></span>
-                    </div>
-                    <div className="form-group col-md text-secondary right ">
-
-                    </div>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <div className="form-row">
                     <div className="form-group border m-1 col-md">
                       <label className="text-info" htmlFor="txtName">Project Name</label><span className="required"> *</span>
                       <br /><span id="txtName"></span>
@@ -777,9 +769,14 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                 <div className="form-group">
                   <div className="form-row">
                     <div className="form-group border m-1 col-md">
+                      <label className="text-info" htmlFor="txtStatus">Status</label><span className="required"> *</span>
+                      <br /><span id="txtStatus"></span>
+                    </div>
+                    <div className="form-group border m-1 col-md">
                       <label className="text-info" htmlFor="txtCategoria">Category</label><span className="required"> *</span>
                       <br /><span id="txtCategoria"></span>
                     </div>
+
                     <div className="form-group border m-1 col-md">
                       <label className="text-info" htmlFor="txtTipo">Project type</label><span className="required"> *</span>
                       <br /><span id="txtTipo"></span>
@@ -968,21 +965,47 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                   {this.state.itemsListForum.map((item, key) => {
 
-                    var id = item.idAntigo;
+                    var id = item.ID;
+                    var arrTo = [];
+                    var countRespostas = 0;
 
-                    var criadoPor = item.Created_x0020_By_x0020_2010;
+                    var criadoPor = item.Author.Title;
                     var to = item.To;
-                    var criado = new Date(item.Created2010);
+
+                    console.log("to", to);
+
+                    if (to != "") {
+
+                      let naoContemValor = to.hasOwnProperty('__deferred');
+
+                      console.log("naoContemValor", naoContemValor);
+
+                      if (!naoContemValor) {
+
+                        for (var i = 0; i < to.results.length; i++) {
+
+                          arrTo.push(to.results[i].Title);
+
+                        }
+
+                      }
+
+                    }
+                    // 
+
+                    var criado = new Date(item.Created);
 
                     var dtcriado = ("0" + criado.getDate()).slice(-2) + '/' + ("0" + (criado.getMonth() + 1)).slice(-2) + '/' + criado.getFullYear() + ' ' + ("0" + (criado.getHours())).slice(-2) + ':' + ("0" + (criado.getMinutes())).slice(-2);
-                    var respostas = item.Respostas;
-                    var assunto = item.Subject;
-
-                    console.log("assunto", assunto);
+                    // var respostas = item.Respostas;
+                    var respostas = item.Folder.ItemCount;
+                    console.log("respostas", respostas);
+                    var assunto = item.Title;
 
                     var corpo = item.Body;
 
-                    if (respostas != "0") {
+                    //respostas = "1";
+
+                    if (respostas != 0) {
 
                       return (
 
@@ -991,8 +1014,9 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                           <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
 
                             <b>Comentário postado por:</b> {criadoPor} em {dtcriado}<br></br>
-                            <b>Para:</b> {to}<br></br>
+                            <b>Para:</b> {arrTo.toString()}<br></br>
                             <b>Respostas:</b> {respostas}
+
 
                           </div>
                           <br />
@@ -1021,7 +1045,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
                           <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
 
                             <b>Comentário postado por:</b> {criadoPor} em {dtcriado}<br></br>
-                            <b>Para:</b> {to}<br></br>
+                            <b>Para:</b> {arrTo.toString()}<br></br>
                             <b>Respostas:</b> {respostas}
 
                           </div>
@@ -1230,14 +1254,26 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                 {this.state.itemsListForumRespostas.map((item, key) => {
 
-                  var criadoPor = item.Created_x0020_By_x0020_2010;
-                  var to = item.To;
+                  console.log("item", item);
+
+                  var criadoPor = "";
+
+                  if (item.Author != "") {
+
+                    var arrAuthor = item.Author;
+
+                    console.log("arrAuthor", arrAuthor[0].title);
+                    criadoPor = arrAuthor[0].title;
+
+                  }
+
+                  console.log("criadoPor", criadoPor);
+
                   //  console.log("item.Created2010",item.Created2010);
                   // var criado = new Date(item.Created2010);
                   // console.log("criado",criado);
                   // var dtcriado = ("0" + criado.getDate()).slice(-2) + '/' + ("0" + (criado.getMonth() + 1)).slice(-2) + '/' + criado.getFullYear() + ' ' + ("0" + (criado.getHours())).slice(-2) + ':' + ("0" + (criado.getMinutes())).slice(-2);
-                  var respostas = item.Respostas;
-                  var assunto = item.Subject;
+                  var assunto = item.Title;
 
                   var corpo = item.Body;
 
@@ -1247,9 +1283,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
                       <div className="p-3 mb-2 alert-danger text-dark rounded-top ">
 
-                        <b>Comentário postado por:</b> {criadoPor} em {item.Created2010}<br></br>
-
-
+                        <b>Comentário postado por:</b> {criadoPor} em {item.Created}<br></br>
 
                       </div>
                       <br />
@@ -1430,6 +1464,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
     }
 
+
     jQuery.ajax({
       url: url,
       type: "GET",
@@ -1456,7 +1491,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
     console.log("_projectTitle", _projectTitle);
 
     jquery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('Forum BKP')/items?$filter=Project_x0020_Name eq '${_projectTitle}' `,
+      url: `${this.props.siteurl}/_api/web/lists/GetByTitle('BK Forum 3')/items?$top=50&$orderby= Created asc&$select=ID,Title,Project/Title,Created,Body,Author/Title,To/Title,Folder/ItemCount&$expand=Project,Author,To,Folder&$filter=Project/Title eq '${_projectTitle}' `,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
@@ -2027,7 +2062,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
     var url = `${this.props.siteurl}/_api/web/lists/getbytitle('Lista Base Forum 2')/items?$top=1&$orderby= Created asc&$select=ID,Body&$filter=Title eq '${id}' `;
 
-    console.log("url abrirModalRespostas",url);
+    console.log("url abrirModalRespostas", url);
 
     jQuery.ajax({
       url: url,
@@ -2036,7 +2071,7 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: async (resultData) => {
 
-        console.log("resultData.d.results.length abrirModalRespostas",resultData);
+        console.log("resultData.d.results.length abrirModalRespostas", resultData);
 
         if (resultData.d.results.length > 0) {
 
@@ -2044,9 +2079,9 @@ export default class SstDetalhes extends React.Component<ISstDetalhesProps, IRea
 
             var title = resultData.d.results[i].Body;
 
-            var listUri = `${this.props.context.pageContext.web.serverRelativeUrl}/Lists/Forum BKP`;
+            var listUri = `${this.props.context.pageContext.web.serverRelativeUrl}/Lists/BK Forum 3`;
 
-            console.log("listUri",listUri);
+            console.log("listUri", listUri);
 
             await _web.getList(listUri)
               .renderListDataAsStream({

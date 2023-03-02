@@ -59,12 +59,12 @@ const selectOptions2 = {
 
 const empTablecolumns = [
   {
-    dataField: "ID",
+    dataField: "ID_x0020_2",
     text: "Número",
     headerStyle: { backgroundColor: '#bee5eb' },
     sort: true,
     classes: 'text-center',
-    filter: customFilter
+    filter: customFilter,
   },
   {
     dataField: "Title",
@@ -259,7 +259,7 @@ export default class SstListarProjectsTodos extends React.Component<ISstListarPr
 
 
     jQuery.ajax({
-      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,Status_x0020_Projeto&$expand=AssignedTo,Author,Participants,Client`,
+      url: `${this.props.siteurl}/_api/web/lists/getbytitle('Projects List')/items?$top=4999&$orderby= Created desc&$select=ID,Title,ProjCategory,Project_x0020_type,AssignedTo/ID,AssignedTo/Title,Participants/ID,Participants/Title,Product_x0020_description_x0020_,Critical_x0020_requirements,Client/ID,Client/Title,OMP_x0020_documents,ProjStatus,Created,Author/Title,Status_x0020_Projeto,ID_x0020_2&$expand=AssignedTo,Author,Participants,Client`,
       type: "GET",
       headers: { 'Accept': 'application/json; odata=verbose;' },
       success: function (resultData) {
